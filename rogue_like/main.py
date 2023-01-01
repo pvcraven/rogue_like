@@ -9,7 +9,7 @@ python -m arcade.examples.sprite_move_scrolling
 
 import arcade
 from pyglet.math import Vec2
-from dungeon_map import DungeonMap
+from level import Level
 
 SPRITE_SCALING = 0.125
 
@@ -41,17 +41,11 @@ class MyGame(arcade.Window):
 
         # Sprite lists
         self.player_list = None
-        self.wall_list = None
-        self.background_list = None
 
         # Set up the player
         self.player_sprite = None
 
         self.physics_engine = None
-
-        # Used in scrolling
-        self.view_bottom = 0
-        self.view_left = 0
 
         # Track the current state of what key is pressed
         self.left_pressed = False
@@ -62,8 +56,7 @@ class MyGame(arcade.Window):
         self.camera_sprites = arcade.Camera(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT)
         self.camera_gui = arcade.Camera(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT)
 
-        self.dungeon_map = None
-
+        self.level = Level()
         self.room_details = arcade.Text(
             "Fonts:",
             0,
@@ -80,8 +73,6 @@ class MyGame(arcade.Window):
 
         # Sprite lists
         self.player_list = arcade.SpriteList()
-        self.wall_list = arcade.SpriteList()
-        self.background_list = arcade.SpriteList()
 
         # Set up the player
         self.player_sprite = arcade.SpriteSolidColor(GRID_SIZE // 2, GRID_SIZE // 2, arcade.color.GREEN)
@@ -89,85 +80,12 @@ class MyGame(arcade.Window):
         self.player_sprite.center_y = 512
         self.player_list.append(self.player_sprite)
 
-        self.dungeon_map = DungeonMap("../levels/level_01.json")
-
-        # Opening JSON file
-
-        for row in range(self.dungeon_map.map_height):
-            for column in range(self.dungeon_map.map_width):
-                x = column * GRID_SIZE
-                y = (self.dungeon_map.map_height * GRID_SIZE) - (row * GRID_SIZE)
-
-                tile = self.dungeon_map.tiles[row][column]
-                if tile.cell == 0 or tile.perimeter:
-                    sprite = arcade.SpriteSolidColor(GRID_SIZE, GRID_SIZE, arcade.color.BLACK)
-                    sprite.left = x
-                    sprite.bottom = y
-                    self.wall_list.append(sprite)
-
-                if tile.door:
-                    left_tile = tile = self.dungeon_map.tiles[row][column-1]
-                    if left_tile.cell == 0 or left_tile.perimeter:
-                        sprite = arcade.Sprite("../sprites/door-ns.png")
-                    else:
-                        sprite = arcade.Sprite("../sprites/door-ew.png")
-                    sprite.scale = GRID_SIZE / sprite.width
-
-                    sprite.left = x
-                    sprite.bottom = y
-                    self.background_list.append(sprite)
-
-                if tile.locked:
-                    left_tile = tile = self.dungeon_map.tiles[row][column-1]
-                    if left_tile.cell == 0 or left_tile.perimeter:
-                        sprite = arcade.Sprite("../sprites/door-locked-ns.png")
-                    else:
-                        sprite = arcade.Sprite("../sprites/door-locked-ew.png")
-                    sprite.scale = GRID_SIZE / sprite.width
-
-                    sprite.left = x
-                    sprite.bottom = y
-                    self.background_list.append(sprite)
-
-                if tile.trapped:
-                    left_tile = tile = self.dungeon_map.tiles[row][column-1]
-                    if left_tile.cell == 0 or left_tile.perimeter:
-                        sprite = arcade.Sprite("../sprites/door-trapped-ns.png")
-                    else:
-                        sprite = arcade.Sprite("../sprites/door-trapped-ew.png")
-                    sprite.scale = GRID_SIZE / sprite.width
-
-                    sprite.left = x
-                    sprite.bottom = y
-                    self.background_list.append(sprite)
-
-                if tile.secret:
-                    left_tile = tile = self.dungeon_map.tiles[row][column-1]
-                    if left_tile.cell == 0 or left_tile.perimeter:
-                        sprite = arcade.Sprite("../sprites/door-secret-ns.png")
-                    else:
-                        sprite = arcade.Sprite("../sprites/door-secret-ew.png")
-                    sprite.scale = GRID_SIZE / sprite.width
-
-                    sprite.left = x
-                    sprite.bottom = y
-                    self.background_list.append(sprite)
-
-                if tile.label:
-                    sprite = arcade.SpriteSolidColor(GRID_SIZE, GRID_SIZE, arcade.color.LIGHT_GRAY)
-                    sprite.left = x
-                    sprite.bottom = y
-                    self.background_list.append(sprite)
+        self.level.load("../levels/level_01.json")
 
         # Set the background color
         arcade.set_background_color(arcade.color.WHITE)
 
-        # Set the viewport boundaries
-        # These numbers set where we have 'scrolled' to.
-        self.view_left = 0
-        self.view_bottom = 0
-
-        self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
+        self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.level.wall_list)
 
     def on_draw(self):
         """
@@ -181,16 +99,16 @@ class MyGame(arcade.Window):
         self.camera_sprites.use()
 
         # Draw all the sprites.
-        self.wall_list.draw()
-        self.background_list.draw()
+        self.level.wall_list.draw()
+        self.level.background_list.draw()
         self.player_list.draw()
 
         # Select the (unscrolled) camera for our GUI
         self.camera_gui.use()
 
         grid_column = int(self.player_sprite.center_x // GRID_SIZE)
-        grid_row = int(self.dungeon_map.map_height - (self.player_sprite.center_y // GRID_SIZE))
-        cur_tile = self.dungeon_map.tiles[grid_row][grid_column]
+        grid_row = int(self.level.dungeon_map.map_height - (self.player_sprite.center_y // GRID_SIZE))
+        cur_tile = self.level.dungeon_map.tiles[grid_row][grid_column]
         # print(cur_tile)
 
         # Draw the GUI
@@ -198,7 +116,7 @@ class MyGame(arcade.Window):
         info = ""
         if cur_tile.room_id:
             info = f"Room {cur_tile.room_id}. "
-            room = self.dungeon_map.get_room(cur_tile.room_id)
+            room = self.level.dungeon_map.get_room(cur_tile.room_id)
             if room and room.room_features:
                 info += room.room_features
 
@@ -255,13 +173,15 @@ class MyGame(arcade.Window):
         self.scroll_to_player()
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
-        x += self.view_left
-        y += self.view_bottom
-        column = int(x // GRID_SIZE)
-        row = int(self.dungeon_map.map_height - (y // GRID_SIZE))
+        l = self.camera_sprites.position[0]
+        b = self.camera_sprites.position[1]
+        adjusted_x = l + x
+        adjusted_y = b + y
+        column = int(adjusted_x // GRID_SIZE)
+        row = int(self.dungeon_map.map_height - (adjusted_y // GRID_SIZE))
         tile = self.dungeon_map.tiles[row][column]
         print()
-        print(column, row)
+        print(f"{row=} {column=}")
         self.dungeon_map.print_cell(tile.cell)
 
     def scroll_to_player(self):
@@ -284,7 +204,6 @@ class MyGame(arcade.Window):
         """
         self.camera_sprites.resize(width, height)
         self.camera_gui.resize(width, height)
-
 
 
 def main():

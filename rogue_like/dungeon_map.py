@@ -40,7 +40,14 @@ class Tile:
 
 class DungeonMap:
 
-    def __init__(self, filename):
+    def __init__(self):
+        self.cells = {}
+        self.bitmask = {}
+        self.rooms = {}
+        self.map_height = 0
+        self.map_width = 0
+
+    def load(self, filename):
         f = open(filename)
         data = json.load(f)
         self.cells = data['cells']
@@ -100,7 +107,6 @@ class DungeonMap:
                 return self.rooms[room_id]
 
     def print_cell(self, cell):
-        print()
         if not cell:
             print("Nothing")
         for key in self.bitmask:
