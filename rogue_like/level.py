@@ -1,7 +1,11 @@
+"""
+Sprites for a dungeon level
+"""
 import arcade
 
 from dungeon_map import DungeonMap
 from constants import GRID_SIZE
+
 
 class Level:
     def __init__(self):
@@ -11,9 +15,8 @@ class Level:
 
     def load(self, filename):
 
+        # Load the map
         self.dungeon_map.load(filename)
-
-        # Opening JSON file
 
         for row in range(self.dungeon_map.map_height):
             for column in range(self.dungeon_map.map_width):
@@ -69,6 +72,22 @@ class Level:
                         sprite = arcade.Sprite("../sprites/door-secret-ns.png")
                     else:
                         sprite = arcade.Sprite("../sprites/door-secret-ew.png")
+                    sprite.scale = GRID_SIZE / sprite.width
+
+                    sprite.left = x
+                    sprite.bottom = y
+                    self.background_list.append(sprite)
+
+                if tile.stair_up:
+                    sprite = arcade.Sprite("../sprites/stair-up.png")
+                    sprite.scale = GRID_SIZE / sprite.width
+
+                    sprite.left = x
+                    sprite.bottom = y
+                    self.background_list.append(sprite)
+
+                if tile.stair_down:
+                    sprite = arcade.Sprite("../sprites/stair-down.png")
                     sprite.scale = GRID_SIZE / sprite.width
 
                     sprite.left = x

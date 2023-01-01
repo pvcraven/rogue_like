@@ -1,3 +1,6 @@
+"""
+Data objects and JSON loading for dungeon
+"""
 import json
 
 

@@ -178,11 +178,11 @@ class MyGame(arcade.Window):
         adjusted_x = l + x
         adjusted_y = b + y
         column = int(adjusted_x // GRID_SIZE)
-        row = int(self.dungeon_map.map_height - (adjusted_y // GRID_SIZE))
-        tile = self.dungeon_map.tiles[row][column]
+        row = int(self.level.dungeon_map.map_height - (adjusted_y // GRID_SIZE))
+        tile = self.level.dungeon_map.tiles[row][column]
         print()
         print(f"{row=} {column=}")
-        self.dungeon_map.print_cell(tile.cell)
+        self.level.dungeon_map.print_cell(tile.cell)
 
     def scroll_to_player(self):
         """
