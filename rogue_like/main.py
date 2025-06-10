@@ -53,8 +53,8 @@ class MyGame(arcade.Window):
         self.up_pressed = False
         self.down_pressed = False
 
-        self.camera_sprites = arcade.Camera(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT)
-        self.camera_gui = arcade.Camera(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT)
+        self.camera_sprites = arcade.Camera2D()
+        self.camera_gui = arcade.Camera2D()
 
         self.level = Level()
         self.room_details = arcade.Text(
@@ -75,12 +75,12 @@ class MyGame(arcade.Window):
         self.player_list = arcade.SpriteList()
 
         # Set up the player
-        self.player_sprite = arcade.SpriteSolidColor(GRID_SIZE // 2, GRID_SIZE // 2, arcade.color.GREEN)
+        self.player_sprite = arcade.SpriteSolidColor(width=GRID_SIZE // 2, height=GRID_SIZE // 2, color=arcade.color.GREEN)
         self.player_sprite.center_x = 256
         self.player_sprite.center_y = 512
         self.player_list.append(self.player_sprite)
 
-        self.level.load("../levels/level_01.json")
+        self.level.load("levels/level_01.json")
 
         # Set the background color
         arcade.set_background_color(arcade.color.WHITE)
@@ -112,7 +112,7 @@ class MyGame(arcade.Window):
         # print(cur_tile)
 
         # Draw the GUI
-        arcade.draw_rectangle_filled(self.width // 2, 40, self.width, 80, arcade.color.ALMOND)
+        arcade.draw_rect_filled(arcade.rect.XYWH(self.width // 2, 40, self.width, 80), arcade.color.ALMOND)
         info = ""
         if cur_tile.room_id:
             info = f"Room {cur_tile.room_id}. "
@@ -184,26 +184,29 @@ class MyGame(arcade.Window):
         print(f"{row=} {column=}")
         self.level.dungeon_map.print_cell(tile.cell)
 
+
     def scroll_to_player(self):
         """
         Scroll the window to the player.
 
-        if CAMERA_SPEED is 1, the camera will immediately move to the desired position.
-        Anything between 0 and 1 will have the camera move to the location with a smoother
-        pan.
+        if CAMERA_SPEED is 1, the camera will immediately move to the desired
+        position. Anything between 0 and 1 will have the camera move to the
+        location with a smoother pan.
         """
 
-        position = Vec2(self.player_sprite.center_x - self.width / 2,
-                        self.player_sprite.center_y - self.height / 2)
-        self.camera_sprites.move_to(position, CAMERA_SPEED)
+        position = (self.player_sprite.center_x, self.player_sprite.center_y)
+        self.camera_sprites.position = arcade.math.lerp_2d(
+            self.camera_sprites.position, position, CAMERA_SPEED,
+        )
 
     def on_resize(self, width: int, height: int):
         """
         Resize window
         Handle the user grabbing the edge and resizing the window.
         """
-        self.camera_sprites.resize(width, height)
-        self.camera_gui.resize(width, height)
+        super().on_resize(width, height)
+        self.camera_sprites.match_window()
+        self.camera_gui.match_window()
 
 
 def main():
