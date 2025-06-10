@@ -1,6 +1,7 @@
 """
 Data objects and JSON loading for dungeon
 """
+
 import json
 
 
@@ -51,18 +52,23 @@ class DungeonMap:
         self.map_width = 0
 
     def load(self, filename):
-        f = open(filename)
+        f = open(filename, encoding="utf-8")
         data = json.load(f)
-        self.cells = data['cells']
-        self.bitmask = data['cell_bit']
-        rooms_dict = data['rooms']
+        self.cells = data["cells"]
+        self.bitmask = data["cell_bit"]
+        rooms_dict = data["rooms"]
         self.rooms = {}
         for room_dict in rooms_dict:
             if room_dict:
                 room = Room()
-                room.id = room_dict['id']
-                if 'detail' in room_dict['contents'] and 'room_features' in room_dict['contents']['detail']:
-                    room.room_features = room_dict['contents']['detail']['room_features']
+                room.id = room_dict["id"]
+                if (
+                    "detail" in room_dict["contents"]
+                    and "room_features" in room_dict["contents"]["detail"]
+                ):
+                    room.room_features = room_dict["contents"]["detail"][
+                        "room_features"
+                    ]
                 self.rooms[room.id] = room
 
         self.map_height = len(self.cells)

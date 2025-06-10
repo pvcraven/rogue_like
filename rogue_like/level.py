@@ -1,10 +1,10 @@
 """
 Sprites for a dungeon level
 """
-import arcade
 
-from dungeon_map import DungeonMap
+import arcade
 from constants import GRID_SIZE
+from dungeon_map import DungeonMap
 
 
 class Level:
@@ -25,12 +25,15 @@ class Level:
 
                 tile = self.dungeon_map.tiles[row][column]
                 if tile.cell == 0 or tile.perimeter:
-                    sprite = arcade.SpriteSolidColor(GRID_SIZE, GRID_SIZE, arcade.color.BLACK)
-                    sprite.position = x, y
+                    sprite = arcade.SpriteSolidColor(
+                        width=GRID_SIZE, height=GRID_SIZE, color=arcade.color.BLACK
+                    )
+                    sprite.left = x
+                    sprite.bottom = y
                     self.wall_list.append(sprite)
 
                 if tile.door:
-                    left_tile = tile = self.dungeon_map.tiles[row][column-1]
+                    left_tile = tile = self.dungeon_map.tiles[row][column - 1]
                     if left_tile.cell == 0 or left_tile.perimeter:
                         sprite = arcade.Sprite("sprites/door-ns.png")
                     else:
@@ -42,7 +45,7 @@ class Level:
                     self.background_list.append(sprite)
 
                 if tile.locked:
-                    left_tile = tile = self.dungeon_map.tiles[row][column-1]
+                    left_tile = tile = self.dungeon_map.tiles[row][column - 1]
                     if left_tile.cell == 0 or left_tile.perimeter:
                         sprite = arcade.Sprite("sprites/door-locked-ns.png")
                     else:
@@ -54,7 +57,7 @@ class Level:
                     self.background_list.append(sprite)
 
                 if tile.trapped:
-                    left_tile = tile = self.dungeon_map.tiles[row][column-1]
+                    left_tile = tile = self.dungeon_map.tiles[row][column - 1]
                     if left_tile.cell == 0 or left_tile.perimeter:
                         sprite = arcade.Sprite("sprites/door-trapped-ns.png")
                     else:
@@ -66,7 +69,7 @@ class Level:
                     self.background_list.append(sprite)
 
                 if tile.secret:
-                    left_tile = tile = self.dungeon_map.tiles[row][column-1]
+                    left_tile = tile = self.dungeon_map.tiles[row][column - 1]
                     if left_tile.cell == 0 or left_tile.perimeter:
                         sprite = arcade.Sprite("sprites/door-secret-ns.png")
                     else:
@@ -93,8 +96,8 @@ class Level:
                     sprite.bottom = y
                     self.background_list.append(sprite)
 
-                if tile.label:
-                    sprite = arcade.SpriteSolidColor(width=GRID_SIZE, height=GRID_SIZE, color=arcade.color.LIGHT_GRAY)
-                    sprite.left = x
-                    sprite.bottom = y
-                    self.background_list.append(sprite)
+                # if tile.label:
+                #     sprite = arcade.SpriteSolidColor(width=GRID_SIZE, height=GRID_SIZE, color=arcade.color.LIGHT_GRAY)
+                #     sprite.left = x
+                #     sprite.bottom = y
+                #     self.background_list.append(sprite)

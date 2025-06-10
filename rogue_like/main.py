@@ -8,14 +8,14 @@ python -m arcade.examples.sprite_move_scrolling
 """
 
 import arcade
-from pyglet.math import Vec2
 from level import Level
+from pyglet.math import Vec2
 
 SPRITE_SCALING = 0.125
 
 DEFAULT_SCREEN_WIDTH = 1550
 DEFAULT_SCREEN_HEIGHT = 865
-SCREEN_TITLE = "Sprite Move with Scrolling Screen Example"
+SCREEN_TITLE = "Rogue-Like Example"
 
 # How many pixels to keep as a minimum margin between the character
 # and the edge of the screen.
@@ -31,7 +31,7 @@ GRID_SIZE = 32
 
 
 class MyGame(arcade.Window):
-    """ Main application class. """
+    """Main application class."""
 
     def __init__(self, width, height, title):
         """
@@ -65,27 +65,31 @@ class MyGame(arcade.Window):
             24,
             bold=True,
             width=self.width,
-            multiline=True
+            multiline=True,
         )
 
     def setup(self):
-        """ Set up the game and initialize the variables. """
+        """Set up the game and initialize the variables."""
 
         # Sprite lists
         self.player_list = arcade.SpriteList()
 
         # Set up the player
-        self.player_sprite = arcade.SpriteSolidColor(width=GRID_SIZE // 2, height=GRID_SIZE // 2, color=arcade.color.GREEN)
+        self.player_sprite = arcade.SpriteSolidColor(
+            width=GRID_SIZE // 2, height=GRID_SIZE // 2, color=arcade.color.GREEN
+        )
         self.player_sprite.center_x = 256
         self.player_sprite.center_y = 512
         self.player_list.append(self.player_sprite)
 
-        self.level.load("levels/level_01.json")
+        self.level.load("levels/level_02.json")
 
         # Set the background color
         arcade.set_background_color(arcade.color.GRAY)
 
-        self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.level.wall_list)
+        self.physics_engine = arcade.PhysicsEngineSimple(
+            self.player_sprite, self.level.wall_list
+        )
 
     def on_draw(self):
         """
@@ -107,12 +111,17 @@ class MyGame(arcade.Window):
         self.camera_gui.use()
 
         grid_column = int(self.player_sprite.center_x // GRID_SIZE)
-        grid_row = int(self.level.dungeon_map.map_height - (self.player_sprite.center_y // GRID_SIZE))
+        grid_row = int(
+            self.level.dungeon_map.map_height
+            - (self.player_sprite.center_y // GRID_SIZE)
+        )
         cur_tile = self.level.dungeon_map.tiles[grid_row][grid_column]
         # print(cur_tile)
 
         # Draw the GUI
-        arcade.draw_rect_filled(arcade.rect.XYWH(self.width // 2, 40, self.width, 80), arcade.color.ALMOND)
+        arcade.draw_rect_filled(
+            arcade.rect.XYWH(self.width // 2, 40, self.width, 80), arcade.color.ALMOND
+        )
         info = ""
         if cur_tile.room_id:
             info = f"Room {cur_tile.room_id}. "
@@ -123,10 +132,12 @@ class MyGame(arcade.Window):
         if cur_tile.corridor:
             info += "You are in a corridor."
 
-        arcade.draw_text(info, 10, 45, arcade.color.BLACK_BEAN, 20, multiline=True, width=self.width)
+        arcade.draw_text(
+            info, 10, 45, arcade.color.BLACK_BEAN, 20, multiline=True, width=self.width
+        )
 
     def on_key_press(self, key, modifiers):
-        """Called whenever a key is pressed. """
+        """Called whenever a key is pressed."""
 
         if key == arcade.key.UP:
             self.up_pressed = True
@@ -138,7 +149,7 @@ class MyGame(arcade.Window):
             self.right_pressed = True
 
     def on_key_release(self, key, modifiers):
-        """Called when the user releases a key. """
+        """Called when the user releases a key."""
 
         if key == arcade.key.UP:
             self.up_pressed = False
@@ -150,7 +161,7 @@ class MyGame(arcade.Window):
             self.right_pressed = False
 
     def on_update(self, delta_time):
-        """ Movement and game logic """
+        """Movement and game logic"""
 
         # Calculate speed based on the keys pressed
         self.player_sprite.change_x = 0
@@ -184,7 +195,6 @@ class MyGame(arcade.Window):
         print(f"{row=} {column=}")
         self.level.dungeon_map.print_cell(tile.cell)
 
-
     def scroll_to_player(self):
         """
         Scroll the window to the player.
@@ -196,7 +206,9 @@ class MyGame(arcade.Window):
 
         position = (self.player_sprite.center_x, self.player_sprite.center_y)
         self.camera_sprites.position = arcade.math.lerp_2d(
-            self.camera_sprites.position, position, CAMERA_SPEED,
+            self.camera_sprites.position,
+            position,
+            CAMERA_SPEED,
         )
 
     def on_resize(self, width: int, height: int):
@@ -210,7 +222,7 @@ class MyGame(arcade.Window):
 
 
 def main():
-    """ Main function """
+    """Main function"""
     window = MyGame(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, SCREEN_TITLE)
     window.setup()
     arcade.run()

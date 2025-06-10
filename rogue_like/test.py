@@ -4,6 +4,7 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 SCREEN_TITLE = "Solid Color Sprite Example"
 
+
 class MyGame(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
@@ -19,10 +20,12 @@ class MyGame(arcade.Window):
         arcade.start_render()
         self.sprite_list()
 
+
 def main():
     game = MyGame()
     game.setup()
     arcade.run()
+
 
 if __name__ == "__main__":
     main()
