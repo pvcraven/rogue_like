@@ -83,7 +83,7 @@ class MyGame(arcade.Window):
         self.level.load("levels/level_01.json")
 
         # Set the background color
-        arcade.set_background_color(arcade.color.WHITE)
+        arcade.set_background_color(arcade.color.GRAY)
 
         self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.level.wall_list)
 
