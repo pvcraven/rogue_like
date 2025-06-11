@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "rogue-like"
+version = "0.1.0"
+description = "A Python rogue-like game."
+authors = ["Your Name <youremail@example.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+arcade = "*"
+
+[tool.poetry.dev-dependencies]
+black = "*"
+isort = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py313']
+skip-string-normalization = false
+
+[tool.isort]
+profile = "black"

@@ -114,6 +114,12 @@ class DungeonMap:
         for room_id in self.rooms:
             if self.rooms[room_id] and self.rooms[room_id].id == id:
                 return self.rooms[room_id]
+            
+    # def get_room(self, id):
+    #     for room in self.rooms.values():
+    #         if room and room.id == id:
+    #             return room
+
 
     def print_cell(self, cell):
         if not cell:

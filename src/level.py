@@ -12,6 +12,7 @@ class Level:
         self.wall_list = arcade.SpriteList()
         self.background_list = arcade.SpriteList()
         self.dungeon_map = DungeonMap()
+        self.sprite_sheet_1 = arcade.SpriteSheet("sprites/FDR_Dungeon.png")
 
     def load(self, filename):
 
@@ -25,9 +26,12 @@ class Level:
 
                 tile = self.dungeon_map.tiles[row][column]
                 if tile.cell == 0 or tile.perimeter:
-                    sprite = arcade.SpriteSolidColor(
-                        width=GRID_SIZE, height=GRID_SIZE, color=arcade.color.BLACK
-                    )
+                    texture = self.sprite_sheet_1.get_texture(rect=arcade.XYWH(1*32, 5*32, 32, 32))
+                    # sprite = arcade.SpriteSolidColor(
+                    #     width=GRID_SIZE, height=GRID_SIZE, color=arcade.color.BLACK
+                    # )
+                    sprite = arcade.Sprite(texture)
+                    
                     sprite.left = x
                     sprite.bottom = y
                     self.wall_list.append(sprite)
@@ -97,7 +101,9 @@ class Level:
                     self.background_list.append(sprite)
 
                 # if tile.label:
-                #     sprite = arcade.SpriteSolidColor(width=GRID_SIZE, height=GRID_SIZE, color=arcade.color.LIGHT_GRAY)
+                #     sprite = arcade.SpriteSolidColor(
+                #         width=GRID_SIZE, height=GRID_SIZE, color=arcade.color.LIGHT_GRAY
+                #     )
                 #     sprite.left = x
                 #     sprite.bottom = y
                 #     self.background_list.append(sprite)
