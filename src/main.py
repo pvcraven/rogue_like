@@ -1,42 +1,35 @@
-"""
-Scroll around a large screen.
-
-Artwork from https://kenney.nl
-
-If Python and Arcade are installed, this example can be run from the command line with:
-python -m arcade.examples.sprite_move_scrolling
-"""
-
 import arcade
+from sprites.player import PlayerSprite
 from level import Level
-from pyglet.math import Vec2
 
-SPRITE_SCALING = 0.125
+from constants import (
+    DEFAULT_WINDOW_HEIGHT,
+    DEFAULT_WINDOW_WIDTH,
+    SPRITE_SCALE,
+    CAMERA_SPEED,
+    GRID_SIZE,
+)
 
-DEFAULT_SCREEN_WIDTH = 1550
-DEFAULT_SCREEN_HEIGHT = 865
 SCREEN_TITLE = "Rogue-Like Example"
-
-# How many pixels to keep as a minimum margin between the character
-# and the edge of the screen.
-VIEWPORT_MARGIN = 200
-
-# How fast the camera pans to the player. 1.0 is instant.
-CAMERA_SPEED = 0.1
 
 # How fast the character moves
 PLAYER_MOVEMENT_SPEED = 4
-
-GRID_SIZE = 32
 
 
 class MyGame(arcade.Window):
     """Main application class."""
 
+    def get_clipboard_text(self):
+        """Return the current clipboard text."""
+        # You can use arcade's default clipboard or return an empty string
+        return ""
+
+    def set_clipboard_text(self, text: str):
+        """Set the clipboard text."""
+        # You can implement clipboard functionality or just pass for now
+        # pass
+
     def __init__(self, width, height, title):
-        """
-        Initializer
-        """
         super().__init__(width, height, title, resizable=True)
 
         # Sprite lists
@@ -74,90 +67,94 @@ class MyGame(arcade.Window):
         # Sprite lists
         self.player_list = arcade.SpriteList()
 
-        # Set up the player
-        self.player_sprite = arcade.SpriteSolidColor(
-            width=GRID_SIZE // 2, height=GRID_SIZE // 2, color=arcade.color.GREEN
-        )
-        self.player_sprite.center_x = 256
-        self.player_sprite.center_y = 512
-        self.player_list.append(self.player_sprite)
-
+        # Load the dungeon map
         self.level.load("levels/level_02.json")
+
+        # Set up the player
+        self.player_sprite = PlayerSprite()
+        start_pos = 35, 7
+        self.player_sprite.center_x = (
+            start_pos[0] * GRID_SIZE * SPRITE_SCALE + (GRID_SIZE * SPRITE_SCALE) // 2
+        )
+        self.player_sprite.center_y = (
+            self.level.dungeon_map.map_height - start_pos[1]
+        ) * GRID_SIZE * SPRITE_SCALE + (GRID_SIZE * SPRITE_SCALE) // 2
+        self.player_list.append(self.player_sprite)
 
         # Set the background color
         arcade.set_background_color(arcade.color.GRAY)
 
-        self.physics_engine = arcade.PhysicsEngineSimple(
-            self.player_sprite, self.level.wall_list
-        )
+        walls = self.level.wall_list
+        # walls = []
+        self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, walls)
 
     def on_draw(self):
-        """
-        Render the screen.
-        """
+        """ Render the screen. """
 
-        # This command has to happen before we start drawing
         self.clear()
 
-        # Select the camera we'll use to draw all our sprites
         self.camera_sprites.use()
 
         # Draw all the sprites.
-        self.level.wall_list.draw()
-        self.level.background_list.draw()
-        self.player_list.draw()
+        self.level.wall_list.draw(pixelated=True)
+        self.level.background_list.draw(pixelated=True)
+        self.player_list.draw(pixelated=True)
 
         # Select the (unscrolled) camera for our GUI
         self.camera_gui.use()
 
-        grid_column = int(self.player_sprite.center_x // GRID_SIZE)
+        # Player position in grid coordinates
+        grid_column = int(self.player_sprite.center_x // (GRID_SIZE * SPRITE_SCALE))
         grid_row = int(
             self.level.dungeon_map.map_height
-            - (self.player_sprite.center_y // GRID_SIZE)
+            - (self.player_sprite.center_y // (GRID_SIZE * SPRITE_SCALE))
         )
-        cur_tile = self.level.dungeon_map.tiles[grid_row][grid_column]
-        # print(cur_tile)
+        try:
+            # Get the tile at the player's position
+            cur_tile = self.level.dungeon_map.tiles[grid_row][grid_column]
+        except IndexError:
+            cur_tile = None
 
         # Draw the GUI
         arcade.draw_rect_filled(
             arcade.rect.XYWH(self.width // 2, 40, self.width, 80), arcade.color.ALMOND
         )
-        info = ""
-        if cur_tile.room_id:
+        info = f"Player Position: {grid_column}, {grid_row}. "
+        if cur_tile and cur_tile.room_id:
             info = f"Room {cur_tile.room_id}. "
             room = self.level.dungeon_map.get_room(cur_tile.room_id)
             if room and room.room_features:
                 info += room.room_features
 
-        if cur_tile.corridor:
+        if cur_tile and cur_tile.corridor:
             info += "You are in a corridor."
 
         arcade.draw_text(
             info, 10, 45, arcade.color.BLACK_BEAN, 20, multiline=True, width=self.width
         )
 
-    def on_key_press(self, key, modifiers):
+    def on_key_press(self, symbol, modifiers):
         """Called whenever a key is pressed."""
 
-        if key == arcade.key.UP:
+        if symbol == arcade.key.UP:
             self.up_pressed = True
-        elif key == arcade.key.DOWN:
+        elif symbol == arcade.key.DOWN:
             self.down_pressed = True
-        elif key == arcade.key.LEFT:
+        elif symbol == arcade.key.LEFT:
             self.left_pressed = True
-        elif key == arcade.key.RIGHT:
+        elif symbol == arcade.key.RIGHT:
             self.right_pressed = True
 
-    def on_key_release(self, key, modifiers):
+    def on_key_release(self, symbol, modifiers):
         """Called when the user releases a key."""
 
-        if key == arcade.key.UP:
+        if symbol == arcade.key.UP:
             self.up_pressed = False
-        elif key == arcade.key.DOWN:
+        elif symbol == arcade.key.DOWN:
             self.down_pressed = False
-        elif key == arcade.key.LEFT:
+        elif symbol == arcade.key.LEFT:
             self.left_pressed = False
-        elif key == arcade.key.RIGHT:
+        elif symbol == arcade.key.RIGHT:
             self.right_pressed = False
 
     def on_update(self, delta_time):
@@ -175,6 +172,8 @@ class MyGame(arcade.Window):
             self.player_sprite.change_x = -PLAYER_MOVEMENT_SPEED
         elif self.right_pressed and not self.left_pressed:
             self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
+
+        self.player_sprite.update(delta_time)
 
         # Call update on all sprites (The sprites don't do much in this
         # example though.)
@@ -223,7 +222,7 @@ class MyGame(arcade.Window):
 
 def main():
     """Main function"""
-    window = MyGame(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, SCREEN_TITLE)
+    window = MyGame(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, SCREEN_TITLE)
     window.setup()
     arcade.run()
 

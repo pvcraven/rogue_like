@@ -3,8 +3,14 @@ Sprites for a dungeon level
 """
 
 import arcade
-from constants import GRID_SIZE
+from constants import GRID_SIZE, SPRITE_SCALE
 from dungeon_map import DungeonMap
+
+BRICK_WALL = arcade.LBWH(1*32, 4*32+16, 32, 32)
+BRICK_WALL_WITH_BOTTOM_EDGE = arcade.LBWH(1*32, 5*32, 32, 32)
+BRICK_WALL_WITH_LEFT_EDGE = arcade.LBWH(3*32+16, 2*32+16, 32, 32)
+BRICK_WALL_WITH_RIGHT_EDGE = arcade.LBWH(4*32+16, 2*32+16, 32, 32)
+BRICK_WALL_WITH_TOP_EDGE = arcade.LBWH(8*32, 2*32, 32, 32)
 
 
 class Level:
@@ -25,12 +31,21 @@ class Level:
                 y = (self.dungeon_map.map_height * GRID_SIZE) - (row * GRID_SIZE)
 
                 tile = self.dungeon_map.tiles[row][column]
+                tile_up = self.dungeon_map.tiles[row - 1][column] if row > 0 else None
+                tile_left = self.dungeon_map.tiles[row][column - 1] if column > 0 else None
+                tile_down = self.dungeon_map.tiles[row + 1][column] if row < self.dungeon_map.map_height - 1 else None
+                tile_right = self.dungeon_map.tiles[row][column + 1] if column < self.dungeon_map.map_width - 1 else None
+
                 if tile.cell == 0 or tile.perimeter:
-                    texture = self.sprite_sheet_1.get_texture(rect=arcade.XYWH(1*32, 5*32, 32, 32))
-                    # sprite = arcade.SpriteSolidColor(
-                    #     width=GRID_SIZE, height=GRID_SIZE, color=arcade.color.BLACK
-                    # )
-                    sprite = arcade.Sprite(texture)
+                    if tile_up and not (tile_up.cell == 0 or tile_up.perimeter):
+                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_WITH_TOP_EDGE)
+                    elif tile_left and not (tile_left.cell == 0 or tile_left.perimeter):
+                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_WITH_LEFT_EDGE)
+                    elif tile_right and not (tile_right.cell == 0 or tile_right.perimeter):
+                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_WITH_RIGHT_EDGE)
+                    else:
+                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL)
+                    sprite = arcade.Sprite(texture, scale=SPRITE_SCALE)
                     
                     sprite.left = x
                     sprite.bottom = y
