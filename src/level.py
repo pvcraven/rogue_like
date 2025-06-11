@@ -6,19 +6,23 @@ import arcade
 from constants import GRID_SIZE, SPRITE_SCALE
 from dungeon_map import DungeonMap
 
-BRICK_WALL = arcade.LBWH(1*32, 4*32+16, 32, 32)
+BRICK_WALL = arcade.LBWH(1*32, 1*32, 32, 32)
 BRICK_WALL_WITH_BOTTOM_EDGE = arcade.LBWH(1*32, 5*32, 32, 32)
-BRICK_WALL_WITH_LEFT_EDGE = arcade.LBWH(3*32+16, 2*32+16, 32, 32)
-BRICK_WALL_WITH_RIGHT_EDGE = arcade.LBWH(4*32+16, 2*32+16, 32, 32)
-BRICK_WALL_WITH_TOP_EDGE = arcade.LBWH(8*32, 2*32, 32, 32)
-
+BRICK_WALL_WITH_LEFT_EDGE = arcade.LBWH(0*32, 1*32, 32, 32)
+BRICK_WALL_WITH_RIGHT_EDGE = arcade.LBWH(2*32, 1*32, 32, 32)
+BRICK_WALL_WITH_TOP_EDGE = arcade.LBWH(1*32, 0*32, 32, 32)
+BRICK_WALL_WITH_BOTTOM_EDGE = arcade.LBWH(1*32, 2*32, 32, 32)
+BRICK_WALL_TOP_LEFT_CORNER = arcade.LBWH(0*32, 0*32, 32, 32)
+BRICK_WALL_TOP_COLUMN = arcade.LBWH(3*32, 0*32, 32, 32)
+BRICK_WALL_MIDDLE_COLUMN = arcade.LBWH(3*32, 1*32, 32, 32)
+BRICK_WALL_BOTTOM_COLUMN = arcade.LBWH(3*32, 2*32, 32, 32)
 
 class Level:
     def __init__(self):
         self.wall_list = arcade.SpriteList()
         self.background_list = arcade.SpriteList()
         self.dungeon_map = DungeonMap()
-        self.sprite_sheet_1 = arcade.SpriteSheet("sprites/FDR_Dungeon.png")
+        self.sprite_sheet_1 = arcade.SpriteSheet("sprites/walls.png")
 
     def load(self, filename):
 
@@ -36,17 +40,32 @@ class Level:
                 tile_down = self.dungeon_map.tiles[row + 1][column] if row < self.dungeon_map.map_height - 1 else None
                 tile_right = self.dungeon_map.tiles[row][column + 1] if column < self.dungeon_map.map_width - 1 else None
 
+                is_empty_up = tile_up and not (tile_up.cell == 0 or tile_up.perimeter)
+                is_empty_left = tile_left and not (tile_left.cell == 0 or tile_left.perimeter)
+                is_empty_down = tile_down and not (tile_down.cell == 0 or tile_down.perimeter)
+                is_empty_right = tile_right and not (tile_right.cell == 0 or tile_right.perimeter)
+
                 if tile.cell == 0 or tile.perimeter:
-                    if tile_up and not (tile_up.cell == 0 or tile_up.perimeter):
+                    if is_empty_up and is_empty_left and is_empty_right:
+                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_TOP_COLUMN)
+                    elif is_empty_down and is_empty_left and is_empty_right:
+                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_BOTTOM_COLUMN)
+                    elif is_empty_left and is_empty_right:
+                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_MIDDLE_COLUMN)
+                    elif is_empty_up and is_empty_left:
+                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_TOP_LEFT_CORNER)
+                    elif is_empty_up:
                         texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_WITH_TOP_EDGE)
                     elif tile_left and not (tile_left.cell == 0 or tile_left.perimeter):
                         texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_WITH_LEFT_EDGE)
                     elif tile_right and not (tile_right.cell == 0 or tile_right.perimeter):
                         texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_WITH_RIGHT_EDGE)
+                    elif tile_down and not (tile_down.cell == 0 or tile_down.perimeter):
+                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_WITH_BOTTOM_EDGE)
                     else:
                         texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL)
                     sprite = arcade.Sprite(texture, scale=SPRITE_SCALE)
-                    
+
                     sprite.left = x
                     sprite.bottom = y
                     self.wall_list.append(sprite)
