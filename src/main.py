@@ -1,14 +1,17 @@
 import arcade
-from sprites.player import PlayerSprite
-from level import Level
 
 from constants import (
+    CAMERA_SPEED,
     DEFAULT_WINDOW_HEIGHT,
     DEFAULT_WINDOW_WIDTH,
-    SPRITE_SCALE,
-    CAMERA_SPEED,
+    FOV_RADIUS,
     GRID_SIZE,
+    SPRITE_SCALE,
 )
+from level import Level
+from recalculate_fov import recalculate_fov
+from sprites.player import PlayerSprite
+from util import pixel_to_grid
 
 SCREEN_TITLE = "Rogue-Like Example"
 
@@ -60,6 +63,7 @@ class MyGame(arcade.Window):
             width=self.width,
             multiline=True,
         )
+        self.last_player_position = (0, 0)
 
     def setup(self):
         """Set up the game and initialize the variables."""
@@ -89,7 +93,7 @@ class MyGame(arcade.Window):
         self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, walls)
 
     def on_draw(self):
-        """ Render the screen. """
+        """Render the screen."""
 
         self.clear()
 
@@ -178,6 +182,22 @@ class MyGame(arcade.Window):
         # Call update on all sprites (The sprites don't do much in this
         # example though.)
         self.physics_engine.update()
+
+        # Figure out our field-of-view
+        pos_grid = pixel_to_grid(
+            self.player_sprite.center_x,
+            self.player_sprite.center_y,
+            map_height=self.level.dungeon_map.map_height,
+        )
+        if pos_grid != self.last_player_position:
+            self.last_player_position = pos_grid
+            recalculate_fov(
+                char_x=pos_grid[0],
+                char_y=pos_grid[1],
+                radius=FOV_RADIUS,
+                map_height=self.level.dungeon_map.map_height,
+                sprite_lists=[self.level.wall_list],
+            )
 
         # Scroll the screen to the player
         self.scroll_to_player()
