@@ -187,12 +187,16 @@ class MyGame(arcade.Window):
         )
         if pos_grid != self.last_player_position:
             self.last_player_position = pos_grid
+            sprite_lists = [
+                self.level.wall_list,
+                self.level.background_list,
+            ]
             recalculate_fov(
                 char_x=pos_grid[0],
                 char_y=pos_grid[1],
                 radius=FOV_RADIUS,
                 map_height=self.level.dungeon_map.map_height,
-                sprite_lists=[self.level.wall_list, self.level.background_list],
+                sprite_lists=sprite_lists,
             )
 
         # Scroll the screen to the player
