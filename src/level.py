@@ -17,8 +17,8 @@ BRICK_WALL_WITH_TOP_EDGE = arcade.LBWH(8 * 32, 2 * 32, 32, 32)
 
 class Level:
     def __init__(self):
-        self.wall_list = arcade.SpriteList()
-        self.background_list = arcade.SpriteList()
+        self.wall_list = arcade.SpriteList(use_spatial_hash=True)
+        self.background_list = arcade.SpriteList(use_spatial_hash=True)
         self.dungeon_map = DungeonMap()
         self.sprite_sheet_1 = arcade.SpriteSheet("sprites/FDR_Dungeon.png")
 
