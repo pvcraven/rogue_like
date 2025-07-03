@@ -7,8 +7,6 @@ from typing import List
 
 import arcade
 
-from constants import *
-from sprites.entity import Entity
 from util import grid_to_pixel
 
 
@@ -19,10 +17,11 @@ def reset_fov(sprite_lists: List[arcade.SpriteList]):
     """
     for sprite_list in sprite_lists:
         for sprite in sprite_list:
-            sprite.is_visible = False
-            sprite.color = sprite.not_visible_color
-            if len(sprite.color) == 4:
-                sprite.alpha = sprite.not_visible_color[3]
+            if sprite.is_visible:
+                sprite.is_visible = False
+                sprite.color = sprite.seen_color
+                if len(sprite.color) == 4:
+                    sprite.alpha = sprite.seen_color[3]
 
 
 def recalculate_fov(
@@ -35,7 +34,7 @@ def recalculate_fov(
     """ Calculate the field of vision for a character at (char_x, char_y) with a given radius. """
     reset_fov(sprite_lists)
 
-    resolution = 8  # Lowered from 25 for fewer rays
+    resolution = 8
     circumference = 2 * math.pi * radius
 
     radians_per_point = 2 * math.pi / (circumference * resolution)
@@ -93,12 +92,6 @@ def recalculate_fov(
             if blocks:
                 break
 
-    print(
-        f"Loop 1 count: {loop_1_count}, Loop 2 count: {loop_2_count}, Loop 3 count: {loop_3_count}"
-    )
-    # for sprite_list in sprite_lists:
-    #     for sprite in sprite_list:
-    #         if sprite.is_visible:
-    #             sprite.color = sprite.visible_color
-    #             if len(sprite.color) == 4:
-    #                 sprite.alpha = sprite.visible_color[3]
+    # print(
+    #     f"Loop 1 count: {loop_1_count}, Loop 2 count: {loop_2_count}, Loop 3 count: {loop_3_count}"
+    # )

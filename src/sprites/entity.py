@@ -8,3 +8,4 @@ class Entity(arcade.Sprite):
         self.block_sight = True
         self.visible_color = arcade.color.WHITE
         self.not_visible_color = arcade.color.BLACK
+        self.seen_color = arcade.color.GRAY

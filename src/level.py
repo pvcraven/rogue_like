@@ -122,24 +122,10 @@ class Level:
                         texture = self.sprite_sheet_1.get_texture(BRICK_WALL_CORNER_1)
                     elif result_string == "corner_2":
                         texture = self.sprite_sheet_1.get_texture(BRICK_WALL_CORNER_2)
+                    elif result_string == "corner_3":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_CORNER_3)
                     elif result_string == "solo":
                         texture = self.sprite_sheet_1.get_texture(BRICK_WALL_SOLO)
-                    # elif result_string == "top_bottom_edge":
-                    #     texture = self.sprite_sheet_1.get_texture(BRICK_WALL_TOP_BOTTOM_EDGE)
-                    # elif result_string == "only_left":
-                    #     texture = self.sprite_sheet_1.get_texture(BRICK_WALL_ONLY_LEFT)
-                    # elif result_string == "only_right":
-                    #     texture = self.sprite_sheet_1.get_texture(BRICK_WALL_ONLY_RIGHT)
-                    # elif result_string == "corner_1":
-                    #     texture = self.sprite_sheet_1.get_texture(BRICK_WALL_CORNER_1)
-                    # elif result_string == "corner_2":
-                    #     texture = self.sprite_sheet_1.get_texture(BRICK_WALL_CORNER_2)
-                    # elif result_string == "corner_3":
-                    #     texture = self.sprite_sheet_1.get_texture(BRICK_WALL_CORNER_3)
-                    # elif result_string == "corner_4":
-                    #     texture = self.sprite_sheet_1.get_texture(BRICK_WALL_CORNER_4)
-                    # elif result_string == "solo":
-                    #     texture = self.sprite_sheet_1.get_texture(BRICK_WALL_SOLO)
                     else:
                         texture = self.sprite_sheet_1.get_texture(UNKNOWN)
 
