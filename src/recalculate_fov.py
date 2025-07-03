@@ -20,7 +20,7 @@ def reset_fov(sprite_lists: List[arcade.SpriteList]):
             if sprite.is_visible:
                 sprite.is_visible = False
                 sprite.color = sprite.seen_color
-                if len(sprite.color) == 4:
+                if len(sprite.seen_color) == 4:
                     sprite.alpha = sprite.seen_color[3]
 
 
@@ -43,7 +43,9 @@ def recalculate_fov(
     loop_1_count = 0
     loop_2_count = 0
     loop_3_count = 0
+    saved_checks = 0
     for i in range(point_count):
+        checked_points = []
         loop_1_count += 1
         radians = i * radians_per_point
 
@@ -51,7 +53,6 @@ def recalculate_fov(
         y = math.cos(radians) * radius + char_y
 
         raychecks = radius
-        checked_points = []
         for j in range(raychecks):
             loop_2_count += 1
             # Calculate the grid coordinates
@@ -65,6 +66,7 @@ def recalculate_fov(
 
             # Skip if the point has already been checked
             if grid_point in checked_points:
+                saved_checks += 1
                 continue
             checked_points.append(grid_point)
 
@@ -82,7 +84,7 @@ def recalculate_fov(
                     if not sprite.is_visible:
                         sprite.is_visible = True
                         sprite.color = sprite.visible_color
-                        if len(sprite.color) == 4:
+                        if len(sprite.visible_color) == 4:
                             sprite.alpha = sprite.visible_color[3]
                     if sprite.block_sight:
                         blocks = True
@@ -92,6 +94,6 @@ def recalculate_fov(
             if blocks:
                 break
 
-    # print(
-    #     f"Loop 1 count: {loop_1_count}, Loop 2 count: {loop_2_count}, Loop 3 count: {loop_3_count}"
-    # )
+    print(
+        f"Loop 1 count: {loop_1_count}, Loop 2 count: {loop_2_count}, Loop 3 count: {loop_3_count}, Saved checks: {saved_checks}"
+    )

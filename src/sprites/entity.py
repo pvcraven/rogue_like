@@ -6,8 +6,9 @@ class Entity(arcade.Sprite):
         super().__init__(*args, **kwargs)
         self.is_visible = False
         self.block_sight = True
-        self.visible_color = arcade.color.WHITE
-        self.not_visible_color = arcade.color.WHITE
-        self.seen_color = arcade.color.WHITE
+        self.visible_color = 255, 255, 255, 255
+        self.not_visible_color = 255, 255, 255, 0
+        self.seen_color = 255, 255, 255, 128
+        self.tile = None
         # self.not_visible_color = arcade.color.BLACK
         # self.seen_color = arcade.color.GRAY

@@ -73,16 +73,12 @@ class MyGame(arcade.Window):
 
         # Load the dungeon map
         self.level.load("levels/level_02.json")
+        stairs_up = self.level.get_stairs_up()
 
         # Set up the player
         self.player_sprite = PlayerSprite()
-        start_pos = 35, 7
-        self.player_sprite.center_x = (
-            start_pos[0] * GRID_SIZE * SPRITE_SCALE + (GRID_SIZE * SPRITE_SCALE) // 2
-        )
-        self.player_sprite.center_y = (
-            self.level.dungeon_map.map_height - start_pos[1]
-        ) * GRID_SIZE * SPRITE_SCALE + (GRID_SIZE * SPRITE_SCALE) // 2
+        self.player_sprite.position = stairs_up[0].position
+
         self.player_list.append(self.player_sprite)
 
         # Set the background color
@@ -196,7 +192,7 @@ class MyGame(arcade.Window):
                 char_y=pos_grid[1],
                 radius=FOV_RADIUS,
                 map_height=self.level.dungeon_map.map_height,
-                sprite_lists=[self.level.wall_list],
+                sprite_lists=[self.level.wall_list, self.level.background_list],
             )
 
         # Scroll the screen to the player

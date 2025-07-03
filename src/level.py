@@ -276,6 +276,7 @@ class Level:
 
                 if sprite:
                     sprite.color = sprite.not_visible_color
+                    sprite.tile = tile
 
                 # if tile.label:
                 #     sprite = arcade.SpriteSolidColor(
@@ -284,3 +285,15 @@ class Level:
                 #     sprite.left = x
                 #     sprite.bottom = y
                 #     self.background_list.append(sprite)
+
+    def get_stairs_up(self):
+        """
+        Get a list of stair up sprites
+        """
+        return [sprite for sprite in self.background_list if sprite.tile.stair_up]
+
+    def get_stairs_down(self):
+        """
+        Get a list of stair down sprites
+        """
+        return [sprite for sprite in self.background_list if sprite.tile.stair_down]
