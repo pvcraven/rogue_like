@@ -27,7 +27,7 @@ def recalculate_fov(
                 if len(sprite.color) == 4:
                     sprite.alpha = sprite.not_visible_color[3]
 
-    resolution = 25
+    resolution = 8  # Lowered from 25 for fewer rays
     circumference = 2 * math.pi * radius
 
     radians_per_point = 2 * math.pi / (circumference * resolution)
@@ -53,13 +53,17 @@ def recalculate_fov(
                 sprites_at_point = arcade.get_sprites_at_exact_point(
                     pixel_point, sprite_list
                 )
-                # checks += 1
-                sprite: Entity
                 for sprite in sprites_at_point:
-                    sprite.is_visible = True
+                    if not sprite.is_visible:
+                        sprite.is_visible = True
+                        sprite.color = sprite.visible_color
+                        if len(sprite.color) == 4:
+                            sprite.alpha = sprite.visible_color[3]
                     if sprite.block_sight:
                         blocks = True
-
+                        break  # Early exit on block
+                if blocks:
+                    break  # Early exit on block
             if blocks:
                 break
 
