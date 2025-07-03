@@ -5,6 +5,7 @@ Sprites for a dungeon level
 import arcade
 from constants import GRID_SIZE, SPRITE_SCALE
 from dungeon_map import DungeonMap
+from match_array import match_array
 
 BRICK_WALL                     = arcade.LBWH(1*32, 1*32, 32, 32)
 BRICK_WALL_WITH_BOTTOM_EDGE    = arcade.LBWH(1*32, 5*32, 32, 32)
@@ -15,9 +16,13 @@ BRICK_WALL_WITH_BOTTOM_EDGE    = arcade.LBWH(1*32, 2*32, 32, 32)
 BRICK_WALL_TOP_LEFT_CORNER     = arcade.LBWH(0*32, 0*32, 32, 32)
 BRICK_WALL_TOP_RIGHT_CORNER    = arcade.LBWH(2*32, 0*32, 32, 32)
 BRICK_WALL_BOTTOM_RIGHT_CORNER = arcade.LBWH(2*32, 2*32, 32, 32)
-BRICK_WALL_TOP_COLUMN          = arcade.LBWH(3*32, 0*32, 32, 32)
-BRICK_WALL_MIDDLE_COLUMN       = arcade.LBWH(3*32, 1*32, 32, 32)
-BRICK_WALL_BOTTOM_COLUMN       = arcade.LBWH(3*32, 2*32, 32, 32)
+BRICK_WALL_BOTTOM_LEFT_CORNER  = arcade.LBWH(0*32, 2*32, 32, 32)
+BRICK_WALL_TOP_NS_COLUMN          = arcade.LBWH(3*32, 0*32, 32, 32)
+BRICK_WALL_MIDDLE_NS_COLUMN       = arcade.LBWH(3*32, 1*32, 32, 32)
+BRICK_WALL_BOTTOM_NS_COLUMN       = arcade.LBWH(3*32, 2*32, 32, 32)
+BRICK_WALL_LEFT_EW_COLUMN          = arcade.LBWH(0*32, 3*32, 32, 32)
+BRICK_WALL_MIDDLE_EW_COLUMN       = arcade.LBWH(1*32, 3*32, 32, 32)
+BRICK_WALL_RIGHT_EW_COLUMN       = arcade.LBWH(2*32, 3*32, 32, 32)
 BRICK_WALL_TOP_BOTTOM_EDGE     = arcade.LBWH(1*32, 3*32, 32, 32)
 BRICK_WALL_ONLY_LEFT           = arcade.LBWH(2*32, 3*32, 32, 32)
 BRICK_WALL_ONLY_RIGHT          = arcade.LBWH(0*32, 3*32, 32, 32)
@@ -25,6 +30,9 @@ BRICK_WALL_CORNER_1            = arcade.LBWH(4*32, 0*32, 32, 32)
 BRICK_WALL_CORNER_2            = arcade.LBWH(5*32, 0*32, 32, 32)
 BRICK_WALL_CORNER_3            = arcade.LBWH(4*32, 1*32, 32, 32)
 BRICK_WALL_CORNER_4            = arcade.LBWH(5*32, 1*32, 32, 32)
+BRICK_WALL_CORNER_5            = arcade.LBWH(6*32, 0*32, 32, 32)
+BRICK_WALL_SOLO                = arcade.LBWH(3*32, 3*32, 32, 32)
+UNKNOWN                        = arcade.LBWH(7*32, 2*32, 32, 32)
 
 class Level:
     def __init__(self):
@@ -44,78 +52,95 @@ class Level:
                 y = (self.dungeon_map.map_height * GRID_SIZE) - (row * GRID_SIZE)
 
                 tile = self.dungeon_map.tiles[row][column]
-                tile_up = self.dungeon_map.tiles[row - 1][column] if row > 0 else None
-                tile_left = self.dungeon_map.tiles[row][column - 1] if column > 0 else None
-                tile_down = self.dungeon_map.tiles[row + 1][column] if row < self.dungeon_map.map_height - 1 else None
-                tile_right = self.dungeon_map.tiles[row][column + 1] if column < self.dungeon_map.map_width - 1 else None
-                # Diagonal neighbors
-                tile_up_left = (
-                    self.dungeon_map.tiles[row - 1][column - 1]
-                    if row > 0 and column > 0 else None
-                )
-                tile_up_right = (
-                    self.dungeon_map.tiles[row - 1][column + 1]
-                    if row > 0 and column < self.dungeon_map.map_width - 1 else None
-                )
-                tile_down_left = (
-                    self.dungeon_map.tiles[row + 1][column - 1]
-                    if row < self.dungeon_map.map_height - 1 and column > 0 else None
-                )
-                tile_down_right = (
-                    self.dungeon_map.tiles[row + 1][column + 1]
-                    if row < self.dungeon_map.map_height - 1 and column < self.dungeon_map.map_width - 1 else None
-                )
 
-                is_empty_up = tile_up and not (tile_up.cell == 0 or tile_up.perimeter)
-                is_empty_left = tile_left and not (tile_left.cell == 0 or tile_left.perimeter)
-                is_empty_down = tile_down and not (tile_down.cell == 0 or tile_down.perimeter)
-                is_empty_right = tile_right and not (tile_right.cell == 0 or tile_right.perimeter)
+                # Get a nested list of the tile and its neighbors
+                tiles = [
+                    [
+                        self.dungeon_map.tiles[row - 1][column - 1] if row > 0 and column > 0 else None,
+                        self.dungeon_map.tiles[row - 1][column] if row > 0 else None,
+                        self.dungeon_map.tiles[row - 1][column + 1] if row > 0 and column < self.dungeon_map.map_width - 1 else None
+                    ],
+                    [
+                        self.dungeon_map.tiles[row][column - 1] if column > 0 else None,
+                        tile,
+                        self.dungeon_map.tiles[row][column + 1] if column < self.dungeon_map.map_width - 1 else None
+                    ],
+                    [
+                        self.dungeon_map.tiles[row + 1][column - 1] if row < self.dungeon_map.map_height - 1 and column > 0 else None,
+                        self.dungeon_map.tiles[row + 1][column] if row < self.dungeon_map.map_height - 1 else None,
+                        self.dungeon_map.tiles[row + 1][column + 1] if row < self.dungeon_map.map_height - 1 and column < self.dungeon_map.map_width - 1 else None
+                    ]
+                ]
 
-                is_empty_up_left = tile_up_left and not (tile_up_left.cell == 0 or tile_up_left.perimeter)
-                is_empty_up_right = tile_up_right and not (tile_up_right.cell == 0 or tile_up_right.perimeter)
-                is_empty_down_left = tile_down_left and not (tile_down_left.cell == 0 or tile_down_left.perimeter)
-                is_empty_down_right = tile_down_right and not (tile_down_right.cell == 0 or tile_down_right.perimeter)
+                def is_wall(tile):
+                    return tile is not None and (tile.cell == 0 or tile.perimeter)
+
+                # Create a 3x3 array of 1s and 0s based on if there is a tile
+                tile_exists = [
+                    [1 if is_wall(tiles[0][0]) else 0, 1 if is_wall(tiles[0][1]) else 0, 1 if is_wall(tiles[0][2]) else 0],
+                    [1 if is_wall(tiles[1][0]) else 0, 1 if is_wall(tiles[1][1]) else 0, 1 if is_wall(tiles[1][2]) else 0],
+                    [1 if is_wall(tiles[2][0]) else 0, 1 if is_wall(tiles[2][1]) else 0, 1 if is_wall(tiles[2][2]) else 0]
+                ]
 
                 if tile.cell == 0 or tile.perimeter:
-                    if is_empty_down_left and not (is_empty_up or is_empty_left or is_empty_down or is_empty_right or is_empty_up_left or is_empty_up_right or is_empty_down_right):
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_CORNER_2)
-                    elif is_empty_down_right and not (
-                        is_empty_up or is_empty_left or is_empty_down or is_empty_right or
-                        is_empty_up_left or is_empty_up_right or is_empty_down_left
-                    ):
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_CORNER_1)
-                    elif is_empty_up_left and not (is_empty_up or is_empty_left or is_empty_down or is_empty_right or is_empty_down_left or is_empty_down_right or is_empty_up_right):
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_CORNER_4)
-                    elif is_empty_up_right and not (is_empty_up or is_empty_left or is_empty_down or is_empty_right or is_empty_down_left or is_empty_down_right or is_empty_up_left):
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_CORNER_3)
-                    elif is_empty_up and is_empty_down and not is_empty_left and not is_empty_right:
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_TOP_BOTTOM_EDGE)
-                    elif is_empty_up and is_empty_down and not is_empty_left and is_empty_right:
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_ONLY_LEFT)
-                    elif is_empty_up and is_empty_down and is_empty_left and not is_empty_right:
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_ONLY_RIGHT)
-                    elif is_empty_down and is_empty_left and is_empty_right:
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_BOTTOM_COLUMN)
-                    elif is_empty_up and is_empty_left and is_empty_right:
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_TOP_COLUMN)
-                    elif is_empty_left and is_empty_right:
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_MIDDLE_COLUMN)
-                    elif is_empty_up and is_empty_left:
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_TOP_LEFT_CORNER)
-                    elif is_empty_down and is_empty_right and not is_empty_up and not is_empty_left:
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_BOTTOM_RIGHT_CORNER)
-                    elif is_empty_up and is_empty_right and not is_empty_down and not is_empty_right:
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_TOP_RIGHT_CORNER)
-                    elif is_empty_up:
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_WITH_TOP_EDGE)
-                    elif tile_left and not (tile_left.cell == 0 or tile_left.perimeter):
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_WITH_LEFT_EDGE)
-                    elif tile_right and not (tile_right.cell == 0 or tile_right.perimeter):
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_WITH_RIGHT_EDGE)
-                    elif tile_down and not (tile_down.cell == 0 or tile_down.perimeter):
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL_WITH_BOTTOM_EDGE)
+                    # Create array of booleans to represent the current setup of the tile and its neighbors
+                    result_string = match_array(tile_exists)
+                    print(f"Row: {row}, Column: {column}, Setup: {tile_exists}, Result: {result_string}")
+                    if result_string == "inside_wall":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL)
+                    elif result_string == "top_edge":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_WITH_TOP_EDGE)
+                    elif result_string == "bottom_edge":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_WITH_BOTTOM_EDGE)
+                    elif result_string == "left_edge":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_WITH_LEFT_EDGE)
+                    elif result_string == "right_edge":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_WITH_RIGHT_EDGE)
+                    elif result_string == "top_left_corner":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_TOP_LEFT_CORNER)
+                    elif result_string == "top_right_corner":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_TOP_RIGHT_CORNER)
+                    elif result_string == "bottom_right_corner":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_BOTTOM_RIGHT_CORNER)
+                    elif result_string == "bottom_left_corner":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_BOTTOM_LEFT_CORNER)
+                    elif result_string == "top_ns_column":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_TOP_NS_COLUMN)
+                    elif result_string == "middle_ns_column":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_MIDDLE_NS_COLUMN)
+                    elif result_string == "bottom_ns_column":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_BOTTOM_NS_COLUMN)
+                    elif result_string == "left_ew_column":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_LEFT_EW_COLUMN)
+                    elif result_string == "middle_ew_column":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_MIDDLE_EW_COLUMN)
+                    elif result_string == "right_ew_column":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_RIGHT_EW_COLUMN)
+                    elif result_string == "corner_1":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_CORNER_1)
+                    elif result_string == "corner_2":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_CORNER_2)
+                    elif result_string == "solo":
+                        texture = self.sprite_sheet_1.get_texture(BRICK_WALL_SOLO)
+                    # elif result_string == "top_bottom_edge":
+                    #     texture = self.sprite_sheet_1.get_texture(BRICK_WALL_TOP_BOTTOM_EDGE)
+                    # elif result_string == "only_left":
+                    #     texture = self.sprite_sheet_1.get_texture(BRICK_WALL_ONLY_LEFT)
+                    # elif result_string == "only_right":
+                    #     texture = self.sprite_sheet_1.get_texture(BRICK_WALL_ONLY_RIGHT)
+                    # elif result_string == "corner_1":
+                    #     texture = self.sprite_sheet_1.get_texture(BRICK_WALL_CORNER_1)
+                    # elif result_string == "corner_2":
+                    #     texture = self.sprite_sheet_1.get_texture(BRICK_WALL_CORNER_2)
+                    # elif result_string == "corner_3":
+                    #     texture = self.sprite_sheet_1.get_texture(BRICK_WALL_CORNER_3)
+                    # elif result_string == "corner_4":
+                    #     texture = self.sprite_sheet_1.get_texture(BRICK_WALL_CORNER_4)
+                    # elif result_string == "solo":
+                    #     texture = self.sprite_sheet_1.get_texture(BRICK_WALL_SOLO)
                     else:
-                        texture = self.sprite_sheet_1.get_texture(rect=BRICK_WALL)
+                        texture = self.sprite_sheet_1.get_texture(UNKNOWN)
+
                     sprite = arcade.Sprite(texture, scale=SPRITE_SCALE)
 
                     sprite.left = x
