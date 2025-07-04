@@ -93,10 +93,10 @@ class MyGame(arcade.Window):
         self.camera_gui.use()
 
         # Player position in grid coordinates
-        grid_column = int(self.player_sprite.center_x // (GRID_SIZE * SPRITE_SCALE))
+        grid_column = int(self.player_sprite.center_x // GRID_SIZE)
         grid_row = int(
             self.level.dungeon_map.map_height
-            - (self.player_sprite.center_y // (GRID_SIZE * SPRITE_SCALE))
+            - (self.player_sprite.center_y // GRID_SIZE)
         )
         try:
             # Get the tile at the player's position
@@ -110,8 +110,8 @@ class MyGame(arcade.Window):
         )
         info = f"Player Position: {grid_column}, {grid_row}. "
         if cur_tile and cur_tile.room_id:
-            info = f"Room {cur_tile.room_id}. "
-            room = self.level.dungeon_map.get_room(cur_tile.room_id)
+            info += f"Room {cur_tile.room_id}. "
+            room = self.level.dungeon_map.get_room(str(cur_tile.room_id))
             if room and room.room_features:
                 info += room.room_features
 

@@ -110,7 +110,7 @@ class DungeonMap:
         value2 = value >> (shift - 1)
         return value2
 
-    def get_room(self, id):
+    def get_room(self, id: str):
         for room_id in self.rooms:
             if self.rooms[room_id] and self.rooms[room_id].id == id:
                 return self.rooms[room_id]
