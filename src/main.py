@@ -22,16 +22,6 @@ PLAYER_MOVEMENT_SPEED = 4
 class MyGame(arcade.Window):
     """Main application class."""
 
-    def get_clipboard_text(self):
-        """Return the current clipboard text."""
-        # You can use arcade's default clipboard or return an empty string
-        return ""
-
-    def set_clipboard_text(self, text: str):
-        """Set the clipboard text."""
-        # You can implement clipboard functionality or just pass for now
-        # pass
-
     def __init__(self, width, height, title):
         super().__init__(width, height, title, resizable=True)
 
@@ -63,7 +53,7 @@ class MyGame(arcade.Window):
             width=self.width,
             multiline=True,
         )
-        self.last_player_position = (0, 0)
+        self.last_player_position = (-10, -10)
 
     def setup(self):
         """Set up the game and initialize the variables."""
@@ -82,7 +72,7 @@ class MyGame(arcade.Window):
         self.player_list.append(self.player_sprite)
 
         # Set the background color
-        arcade.set_background_color(arcade.color.GRAY)
+        arcade.set_background_color(arcade.color.BLACK)
 
         walls = self.level.wall_list
         # walls = []
@@ -96,8 +86,9 @@ class MyGame(arcade.Window):
         self.camera_sprites.use()
 
         # Draw all the sprites.
-        self.level.wall_list.draw(pixelated=True)
         self.level.background_list.draw(pixelated=True)
+        self.level.wall_list.draw(pixelated=True)
+        self.level.door_list.draw(pixelated=True)
         self.player_list.draw(pixelated=True)
 
         # Select the (unscrolled) camera for our GUI
@@ -186,9 +177,11 @@ class MyGame(arcade.Window):
             map_height=self.level.dungeon_map.map_height,
         )
         if pos_grid != self.last_player_position:
+            # print("Ping")
             self.last_player_position = pos_grid
             sprite_lists = [
                 self.level.wall_list,
+                self.level.door_list,
                 self.level.background_list,
             ]
             recalculate_fov(
@@ -239,6 +232,15 @@ class MyGame(arcade.Window):
         self.camera_sprites.match_window()
         self.camera_gui.match_window()
 
+    def get_clipboard_text(self):
+        """Return the current clipboard text."""
+        # You can use arcade's default clipboard or return an empty string
+        return ""
+
+    def set_clipboard_text(self, text: str):
+        """Set the clipboard text."""
+        # You can implement clipboard functionality or just pass for now
+        # pass
 
 def main():
     """Main function"""

@@ -94,6 +94,6 @@ def recalculate_fov(
             if blocks:
                 break
 
-    print(
-        f"Loop 1 count: {loop_1_count}, Loop 2 count: {loop_2_count}, Loop 3 count: {loop_3_count}, Saved checks: {saved_checks}"
-    )
+    # print(
+    #     f"Loop 1 count: {loop_1_count}, Loop 2 count: {loop_2_count}, Loop 3 count: {loop_3_count}, Saved checks: {saved_checks}"
+    # )

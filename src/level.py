@@ -58,13 +58,20 @@ CORNERS_SW_SE                  = arcade.LBWH(8*32, 1*32, 32, 32)
 CORNERS_NE_SE_SW               = arcade.LBWH(8*32, 4*32, 32, 32)
 CORNERS_NW_SE                  = arcade.LBWH(7*32, 4*32, 32, 32)
 UNKNOWN                        = arcade.LBWH(7*32, 2*32, 32, 32)
+FLOOR_TILE_1                   = arcade.LBWH(8*32, 0*32, 32, 32)
+FLOOR_TILE_2                   = arcade.LBWH(6*32, 4*32, 32, 32)
 
 class Level:
     def __init__(self):
+        self.dungeon_map = DungeonMap()
+
         self.wall_list = arcade.SpriteList(use_spatial_hash=True)
         self.background_list = arcade.SpriteList(use_spatial_hash=True)
-        self.dungeon_map = DungeonMap()
+        self.door_list = arcade.SpriteList(use_spatial_hash=True)
+
         self.sprite_sheet_1 = arcade.SpriteSheet("sprites/walls.png")
+        self.sprite_sheet_doors = arcade.SpriteSheet("sprites/doors.png")
+        self.sprite_sheet_stairs = arcade.SpriteSheet("sprites/stairs.png")
 
     def load(self, filename):
 
@@ -210,81 +217,61 @@ class Level:
                     sprite.bottom = y
                     self.wall_list.append(sprite)
 
-                if tile.door:
+                if tile.door or tile.locked or tile.trapped or tile.secret:
                     left_tile = tile = self.dungeon_map.tiles[row][column - 1]
                     if left_tile.cell == 0 or left_tile.perimeter:
-                        sprite = Entity("sprites/door-ns.png")
+                        texture = self.sprite_sheet_doors.get_texture(arcade.LBWH(0*32, 0*32, 32, 32))
                     else:
-                        sprite = Entity("sprites/door-ew.png")
-                    sprite.scale = GRID_SIZE / sprite.width
+                        texture = self.sprite_sheet_doors.get_texture(arcade.LBWH(0*32, 0*32, 32, 32))
+                    sprite = Entity(texture, scale=SPRITE_SCALE)
 
                     sprite.left = x
                     sprite.bottom = y
-                    self.background_list.append(sprite)
 
-                if tile.locked:
-                    left_tile = tile = self.dungeon_map.tiles[row][column - 1]
-                    if left_tile.cell == 0 or left_tile.perimeter:
-                        sprite = Entity("sprites/door-locked-ns.png")
-                    else:
-                        sprite = Entity("sprites/door-locked-ew.png")
-                    sprite.scale = GRID_SIZE / sprite.width
-
-                    sprite.left = x
-                    sprite.bottom = y
-                    self.background_list.append(sprite)
-
-                if tile.trapped:
-                    left_tile = tile = self.dungeon_map.tiles[row][column - 1]
-                    if left_tile.cell == 0 or left_tile.perimeter:
-                        sprite = Entity("sprites/door-trapped-ns.png")
-                    else:
-                        sprite = Entity("sprites/door-trapped-ew.png")
-                    sprite.scale = GRID_SIZE / sprite.width
-
-                    sprite.left = x
-                    sprite.bottom = y
-                    self.background_list.append(sprite)
-
-                if tile.secret:
-                    left_tile = tile = self.dungeon_map.tiles[row][column - 1]
-                    if left_tile.cell == 0 or left_tile.perimeter:
-                        sprite = Entity("sprites/door-secret-ns.png")
-                    else:
-                        sprite = Entity("sprites/door-secret-ew.png")
-                    sprite.scale = GRID_SIZE / sprite.width
-
-                    sprite.left = x
-                    sprite.bottom = y
-                    self.background_list.append(sprite)
+                    self.door_list.append(sprite)
 
                 if tile.stair_up:
-                    sprite = Entity("sprites/stair-up.png")
-                    sprite.scale = GRID_SIZE / sprite.width
+                    texture = self.sprite_sheet_stairs.get_texture(arcade.LBWH(0*32, 0*32, 32, 32))
+                    sprite = Entity(texture, scale=SPRITE_SCALE)
 
                     sprite.left = x
                     sprite.bottom = y
-                    self.background_list.append(sprite)
+                    sprite.block_sight = False
+                    self.door_list.append(sprite)
 
                 if tile.stair_down:
-                    sprite = Entity("sprites/stair-down.png")
-                    sprite.scale = GRID_SIZE / sprite.width
+                    texture = self.sprite_sheet_stairs.get_texture(arcade.LBWH(1*32, 0*32, 32, 32))
+                    sprite = Entity(texture, scale=SPRITE_SCALE)
 
                     sprite.left = x
                     sprite.bottom = y
-                    self.background_list.append(sprite)
+                    sprite.block_sight = False
+                    self.door_list.append(sprite)
 
                 if sprite:
                     sprite.color = sprite.not_visible_color
                     sprite.tile = tile
 
-                # if tile.label:
-                #     sprite = arcade.SpriteSolidColor(
-                #         width=GRID_SIZE, height=GRID_SIZE, color=arcade.color.LIGHT_GRAY
-                #     )
-                #     sprite.left = x
-                #     sprite.bottom = y
-                #     self.background_list.append(sprite)
+                if tile.corridor:
+                    texture = self.sprite_sheet_1.get_texture(FLOOR_TILE_1)
+                    sprite = Entity(texture, scale=SPRITE_SCALE)
+                    sprite.color = sprite.not_visible_color
+                    sprite.block_sight = False
+                    sprite.tile = tile
+                    sprite.left = x
+                    sprite.bottom = y
+                    self.background_list.append(sprite)
+
+                if not tile.corridor and not is_wall(tile):
+                    texture = self.sprite_sheet_1.get_texture(FLOOR_TILE_1)
+                    sprite = Entity(texture, scale=SPRITE_SCALE)
+                    sprite.color = sprite.not_visible_color
+                    sprite.block_sight = False
+                    sprite.tile = tile
+                    sprite.left = x
+                    sprite.bottom = y
+                    self.background_list.append(sprite)
+
 
     def get_stairs_up(self):
         """
