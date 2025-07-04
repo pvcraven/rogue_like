@@ -62,7 +62,7 @@ class MyGame(arcade.Window):
         self.player_list = arcade.SpriteList()
 
         # Load the dungeon map
-        self.level.load("levels/level_02.json")
+        self.level.load("levels/level_03.json")
         stairs_up = self.level.get_stairs_up()
 
         # Set up the player
@@ -74,9 +74,7 @@ class MyGame(arcade.Window):
         # Set the background color
         arcade.set_background_color(arcade.color.BLACK)
 
-        walls = self.level.wall_list
-        # walls = []
-        self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, walls)
+        self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.level.wall_list)
 
     def on_draw(self):
         """Render the screen."""
@@ -127,25 +125,34 @@ class MyGame(arcade.Window):
     def on_key_press(self, symbol, modifiers):
         """Called whenever a key is pressed."""
 
-        if symbol == arcade.key.UP:
+        if symbol == arcade.key.W:
             self.up_pressed = True
-        elif symbol == arcade.key.DOWN:
+        elif symbol == arcade.key.S:
             self.down_pressed = True
-        elif symbol == arcade.key.LEFT:
+        elif symbol == arcade.key.A:
             self.left_pressed = True
-        elif symbol == arcade.key.RIGHT:
+        elif symbol == arcade.key.D:
             self.right_pressed = True
+
+    def on_mouse_scroll(self, x: int, y: int, scroll_x: int, scroll_y: int):
+        """Handle mouse wheel scroll events."""
+        # Zoom the camera in/out with the mouse wheel
+        zoom_factor = 1.1
+        if scroll_y > 0:
+            self.camera_sprites.zoom *= zoom_factor
+        elif scroll_y < 0:
+            self.camera_sprites.zoom /= zoom_factor
 
     def on_key_release(self, symbol, modifiers):
         """Called when the user releases a key."""
 
-        if symbol == arcade.key.UP:
+        if symbol == arcade.key.W:
             self.up_pressed = False
-        elif symbol == arcade.key.DOWN:
+        elif symbol == arcade.key.S:
             self.down_pressed = False
-        elif symbol == arcade.key.LEFT:
+        elif symbol == arcade.key.A:
             self.left_pressed = False
-        elif symbol == arcade.key.RIGHT:
+        elif symbol == arcade.key.D:
             self.right_pressed = False
 
     def on_update(self, delta_time):
@@ -177,7 +184,6 @@ class MyGame(arcade.Window):
             map_height=self.level.dungeon_map.map_height,
         )
         if pos_grid != self.last_player_position:
-            # print("Ping")
             self.last_player_position = pos_grid
             sprite_lists = [
                 self.level.wall_list,
