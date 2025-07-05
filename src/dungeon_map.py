@@ -1,5 +1,11 @@
 """
-Data objects and JSON loading for dungeon
+Data objects and JSON loading for the dungeon.
+This module defines the `Room`, `Tile`, and `DungeonMap` classes, which are used to represent
+the structure of a dungeon in a game. The `DungeonMap` class can load dungeon data from a JSON file,
+including details about rooms and tiles. Each `Tile` can have various properties such as whether it is
+a wall, a corridor, or has other features.
+
+The `Level` class, not defined here, manages sprites.
 """
 
 import json

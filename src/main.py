@@ -6,7 +6,7 @@ from constants import (
     DEFAULT_WINDOW_WIDTH,
     FOV_RADIUS,
     GRID_SIZE,
-    SPRITE_SCALE,
+    LEVEL_FILE_NAMES,
 )
 from level import Level
 from recalculate_fov import recalculate_fov
@@ -30,7 +30,9 @@ class MyGame(arcade.Window):
 
         # Set up the player
         self.player_sprite = None
+        self.last_player_position = (-10, -10)
 
+        # Set up the physics engine
         self.physics_engine = None
 
         # Track the current state of what key is pressed
@@ -39,21 +41,23 @@ class MyGame(arcade.Window):
         self.up_pressed = False
         self.down_pressed = False
 
+        # Cameras
         self.camera_sprites = arcade.Camera2D()
         self.camera_gui = arcade.Camera2D()
 
-        self.level = Level()
+        # Level info
+        self.level: Level = Level()
+        self.levels = []
+
         self.room_details = arcade.Text(
             "Fonts:",
-            0,
-            0,
-            arcade.color.WHITE,
+            10,
+            50,
+            arcade.color.BLACK_BEAN,
             24,
-            bold=True,
             width=self.width,
             multiline=True,
         )
-        self.last_player_position = (-10, -10)
 
     def setup(self):
         """Set up the game and initialize the variables."""
@@ -62,8 +66,17 @@ class MyGame(arcade.Window):
         self.player_list = arcade.SpriteList()
 
         # Load the dungeon map
-        self.level.load("levels/level_03.json")
+        for level_file_name in LEVEL_FILE_NAMES:
+            level = Level()
+            level.load(level_file_name)
+            self.levels.append(level)
+
+        self.level = self.levels[0]
         stairs_up = self.level.get_stairs_up()
+        if len(stairs_up) == 0:
+            raise ValueError(
+                "No stairs up found in the level. Please check the map data."
+            )
 
         # Set up the player
         self.player_sprite = PlayerSprite()
@@ -118,9 +131,12 @@ class MyGame(arcade.Window):
         if cur_tile and cur_tile.corridor:
             info += "You are in a corridor."
 
-        arcade.draw_text(
-            info, 10, 45, arcade.color.BLACK_BEAN, 20, multiline=True, width=self.width
-        )
+        self.room_details.text = info
+
+        # arcade.draw_text(
+        #     info, 10, 45, arcade.color.BLACK_BEAN, 20, multiline=True, width=self.width
+        # )
+        self.room_details.draw()
 
     def on_key_press(self, symbol, modifiers):
         """Called whenever a key is pressed."""

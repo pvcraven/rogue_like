@@ -26,3 +26,10 @@ CAMERA_BOUNDARY = arcade.LRBT(
 )
 
 FOV_RADIUS = 8
+
+# Files holding each level's map data
+LEVEL_FILE_NAMES = [
+    "maps/level_01.json",
+    "maps/level_02.json",
+    "maps/level_03.json"
+]

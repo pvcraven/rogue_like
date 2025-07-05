@@ -1,5 +1,5 @@
 """
-Sprites for a dungeon level
+Sprites for a dungeon level.
 """
 
 import arcade
@@ -10,36 +10,45 @@ from match_array import match_array
 from sprites.entity import Entity
 from wall_texture_map import FLOOR_TILE_1, UNKNOWN, WALL_TEXTURE_MAP
 
+def _is_wall(tile):
+    return tile is not None and (tile.cell == 0 or tile.perimeter)
+
 
 class Level:
     def __init__(self):
 
         # Create the dungeon map
-        self.dungeon_map = DungeonMap()
+        self.dungeon_map: DungeonMap = DungeonMap()
 
         # Sprite lists for different types of sprites
-        self.wall_list = arcade.SpriteList(use_spatial_hash=True)
-        self.background_list = arcade.SpriteList(use_spatial_hash=True)
-        self.door_list = arcade.SpriteList(use_spatial_hash=True)
+        self.wall_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
+        self.background_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
+        self.door_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
 
         # Load sprite sheets
         self.sprite_sheet_1 = arcade.SpriteSheet("sprites/walls.png")
         self.sprite_sheet_doors = arcade.SpriteSheet("sprites/doors.png")
         self.sprite_sheet_stairs = arcade.SpriteSheet("sprites/stairs.png")
 
+
     def load(self, filename):
 
         # Load the map
         self.dungeon_map.load(filename)
 
+        # Loop through each tile in the dungeon map
+        # and create sprites
         for row in range(self.dungeon_map.map_height):
             for column in range(self.dungeon_map.map_width):
+
+                # Get the tile at the current row and column
+                tile = self.dungeon_map.tiles[row][column]
+
+                # Grab the x and y scren coordinates for the tile
                 x = column * GRID_SIZE
                 y = (self.dungeon_map.map_height * GRID_SIZE) - (row * GRID_SIZE)
 
-                tile = self.dungeon_map.tiles[row][column]
-
-                # Get a nested list of the tile and its neighbors
+                # Get a 2D array of the tile and its neighbors
                 tiles = [
                     [
                         self.dungeon_map.tiles[row - 1][column - 1] if row > 0 and column > 0 else None,
@@ -58,14 +67,11 @@ class Level:
                     ]
                 ]
 
-                def is_wall(tile):
-                    return tile is not None and (tile.cell == 0 or tile.perimeter)
-
-                # Create a 3x3 array of 1s and 0s based on if there is a tile
+                # Create a 3x3 array of 1s and 0s based on if there is a wall or map edge
                 tile_exists = [
-                    [1 if is_wall(tiles[0][0]) else 0, 1 if is_wall(tiles[0][1]) else 0, 1 if is_wall(tiles[0][2]) else 0],
-                    [1 if is_wall(tiles[1][0]) else 0, 1 if is_wall(tiles[1][1]) else 0, 1 if is_wall(tiles[1][2]) else 0],
-                    [1 if is_wall(tiles[2][0]) else 0, 1 if is_wall(tiles[2][1]) else 0, 1 if is_wall(tiles[2][2]) else 0]
+                    [1 if _is_wall(tiles[0][0]) else 0, 1 if _is_wall(tiles[0][1]) else 0, 1 if _is_wall(tiles[0][2]) else 0],
+                    [1 if _is_wall(tiles[1][0]) else 0, 1 if _is_wall(tiles[1][1]) else 0, 1 if _is_wall(tiles[1][2]) else 0],
+                    [1 if _is_wall(tiles[2][0]) else 0, 1 if _is_wall(tiles[2][1]) else 0, 1 if _is_wall(tiles[2][2]) else 0]
                 ]
 
                 if tile.cell == 0 or tile.perimeter:
@@ -109,6 +115,7 @@ class Level:
                     sprite.left = x
                     sprite.bottom = y
                     sprite.block_sight = False
+                    sprite.tile = tile
                     self.door_list.append(sprite)
 
                 if tile.stair_down:
@@ -118,6 +125,7 @@ class Level:
                     sprite.left = x
                     sprite.bottom = y
                     sprite.block_sight = False
+                    sprite.tile = tile
                     self.door_list.append(sprite)
 
                 if sprite:
@@ -134,7 +142,7 @@ class Level:
                     sprite.bottom = y
                     self.background_list.append(sprite)
 
-                if not tile.corridor and not is_wall(tile):
+                if not tile.corridor and not _is_wall(tile):
                     texture = self.sprite_sheet_1.get_texture(FLOOR_TILE_1)
                     sprite = Entity(texture, scale=SPRITE_SCALE)
                     sprite.color = sprite.not_visible_color
@@ -149,10 +157,10 @@ class Level:
         """
         Get a list of stair up sprites
         """
-        return [sprite for sprite in self.background_list if sprite.tile.stair_up]
+        return [sprite for sprite in self.door_list if sprite.tile.stair_up]
 
     def get_stairs_down(self):
         """
         Get a list of stair down sprites
         """
-        return [sprite for sprite in self.background_list if sprite.tile.stair_down]
+        return [sprite for sprite in self.door_list if sprite.tile.stair_down]
