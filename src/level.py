@@ -30,6 +30,8 @@ class Level:
         self.sprite_sheet_doors = arcade.SpriteSheet("sprites/doors.png")
         self.sprite_sheet_stairs = arcade.SpriteSheet("sprites/stairs.png")
 
+        self.physics_engine: arcade.PhysicsEngineSimple = arcade.PhysicsEngineSimple(None, self.wall_list)
+
 
     def load(self, filename):
 

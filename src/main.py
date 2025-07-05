@@ -47,7 +47,8 @@ class MyGame(arcade.Window):
 
         # Level info
         self.level: Level = Level()
-        self.levels = []
+        self.cur_level = 0
+        self.levels: list[Level] = []
 
         self.room_details = arcade.Text(
             "Fonts:",
@@ -59,35 +60,49 @@ class MyGame(arcade.Window):
             multiline=True,
         )
 
+    def set_player_position_to_stairs(self, stairs_up: bool) -> None:
+        """Set the player position to the first set of stairs up."""
+        if stairs_up:
+            stairs = self.level.get_stairs_up()
+        else:
+            stairs = self.level.get_stairs_down()
+        if len(stairs) == 0:
+            raise ValueError(
+                "No stairs up found in the level. Please check the map data."
+            )
+
+        self.player_sprite.position = stairs[0].position
+        self.scroll_to_player(camera_speed=1.0)
+
     def setup(self):
         """Set up the game and initialize the variables."""
 
         # Sprite lists
         self.player_list = arcade.SpriteList()
 
+        # Set up the player
+        self.player_sprite = PlayerSprite()
+        self.player_list.append(self.player_sprite)
+
         # Load the dungeon map
         for level_file_name in LEVEL_FILE_NAMES:
             level = Level()
             level.load(level_file_name)
+            level.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, level.wall_list)
             self.levels.append(level)
 
-        self.level = self.levels[0]
-        stairs_up = self.level.get_stairs_up()
-        if len(stairs_up) == 0:
-            raise ValueError(
-                "No stairs up found in the level. Please check the map data."
-            )
+        self.level = self.levels[self.cur_level]
 
-        # Set up the player
-        self.player_sprite = PlayerSprite()
-        self.player_sprite.position = stairs_up[0].position
-
-        self.player_list.append(self.player_sprite)
+        # Set player position to the first set of stairs
+        self.set_player_position_to_stairs(stairs_up=True)
 
         # Set the background color
         arcade.set_background_color(arcade.color.BLACK)
 
-        self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.level.wall_list)
+    def get_grid_position(self, x: float, y: float) -> tuple[int, int]:
+        grid_column = int(x // GRID_SIZE)
+        grid_row = int(self.level.dungeon_map.map_height - y // GRID_SIZE)
+        return grid_column, grid_row
 
     def on_draw(self):
         """Render the screen."""
@@ -106,11 +121,8 @@ class MyGame(arcade.Window):
         self.camera_gui.use()
 
         # Player position in grid coordinates
-        grid_column = int(self.player_sprite.center_x // GRID_SIZE)
-        grid_row = int(
-            self.level.dungeon_map.map_height
-            - (self.player_sprite.center_y // GRID_SIZE)
-        )
+        grid_column, grid_row = self.get_grid_position(self.player_sprite.center_x, self.player_sprite.center_y)
+
         try:
             # Get the tile at the player's position
             cur_tile = self.level.dungeon_map.tiles[grid_row][grid_column]
@@ -121,7 +133,7 @@ class MyGame(arcade.Window):
         arcade.draw_rect_filled(
             arcade.rect.XYWH(self.width // 2, 40, self.width, 80), arcade.color.ALMOND
         )
-        info = f"Player Position: {grid_column}, {grid_row}. "
+        info = f"Level {self.cur_level + 1}, Player Position: {grid_column}, {grid_row}. "
         if cur_tile and cur_tile.room_id:
             info += f"Room {cur_tile.room_id}. "
             room = self.level.dungeon_map.get_room(str(cur_tile.room_id))
@@ -132,10 +144,6 @@ class MyGame(arcade.Window):
             info += "You are in a corridor."
 
         self.room_details.text = info
-
-        # arcade.draw_text(
-        #     info, 10, 45, arcade.color.BLACK_BEAN, 20, multiline=True, width=self.width
-        # )
         self.room_details.draw()
 
     def on_key_press(self, symbol, modifiers):
@@ -149,6 +157,24 @@ class MyGame(arcade.Window):
             self.left_pressed = True
         elif symbol == arcade.key.D:
             self.right_pressed = True
+        elif symbol == arcade.key.E:
+            grid_column, grid_row = self.get_grid_position(self.player_sprite.center_x, self.player_sprite.center_y)
+            cur_tile = self.level.dungeon_map.tiles[grid_row][grid_column]
+            if cur_tile.stair_down:
+                print("DOWN STAIRS")
+                if self.cur_level < len(self.levels):
+                    self.cur_level += 1
+                    self.level = self.levels[self.cur_level]
+                    self.set_player_position_to_stairs(stairs_up=True)
+            elif cur_tile.stair_up:
+                print("UP STAIRS")
+                if self.cur_level > 0:
+                    self.cur_level -= 1
+                    self.level = self.levels[self.cur_level]
+                    self.set_player_position_to_stairs(stairs_up=False)
+
+
+
 
     def on_mouse_scroll(self, x: int, y: int, scroll_x: int, scroll_y: int):
         """Handle mouse wheel scroll events."""
@@ -189,9 +215,7 @@ class MyGame(arcade.Window):
 
         self.player_sprite.update(delta_time)
 
-        # Call update on all sprites (The sprites don't do much in this
-        # example though.)
-        self.physics_engine.update()
+        self.level.physics_engine.update()
 
         # Figure out our field-of-view
         pos_grid = pixel_to_grid(
@@ -229,7 +253,7 @@ class MyGame(arcade.Window):
         print(f"{row=} {column=}")
         self.level.dungeon_map.print_cell(tile.cell)
 
-    def scroll_to_player(self):
+    def scroll_to_player(self, camera_speed: float = CAMERA_SPEED):
         """
         Scroll the window to the player.
 
@@ -242,7 +266,7 @@ class MyGame(arcade.Window):
         self.camera_sprites.position = arcade.math.lerp_2d(
             self.camera_sprites.position,
             position,
-            CAMERA_SPEED,
+            camera_speed,
         )
 
     def on_resize(self, width: int, height: int):
@@ -263,6 +287,8 @@ class MyGame(arcade.Window):
         """Set the clipboard text."""
         # You can implement clipboard functionality or just pass for now
         # pass
+
+
 
 def main():
     """Main function"""
