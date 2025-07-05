@@ -32,6 +32,38 @@ class Level:
 
         self.physics_engine: arcade.PhysicsEngineSimple = arcade.PhysicsEngineSimple(None, self.wall_list)
 
+    def _get_surrounding_tiles(self, row, column):
+        """
+        Get a 3x3 array of tiles surrounding the tile at (row, column).
+        """
+        tiles = [
+            [
+                self.dungeon_map.tiles[row - 1][column - 1] if row > 0 and column > 0 else None,
+                self.dungeon_map.tiles[row - 1][column] if row > 0 else None,
+                self.dungeon_map.tiles[row - 1][column + 1] if row > 0 and column < self.dungeon_map.map_width - 1 else None
+            ],
+            [
+                self.dungeon_map.tiles[row][column - 1] if column > 0 else None,
+                self.dungeon_map.tiles[row][column],
+                self.dungeon_map.tiles[row][column + 1] if column < self.dungeon_map.map_width - 1 else None
+            ],
+            [
+                self.dungeon_map.tiles[row + 1][column - 1] if row < self.dungeon_map.map_height - 1 and column > 0 else None,
+                self.dungeon_map.tiles[row + 1][column] if row < self.dungeon_map.map_height - 1 else None,
+                self.dungeon_map.tiles[row + 1][column + 1] if row < self.dungeon_map.map_height - 1 and column < self.dungeon_map.map_width - 1 else None
+            ]
+        ]
+        return tiles
+
+    def _get_wall_array(self, tiles):
+        """
+        Get a 3x3 array of 1s and 0s representing walls around the tile at (row, column).
+        """
+        return [
+            [1 if _is_wall(tiles[0][0]) else 0, 1 if _is_wall(tiles[0][1]) else 0, 1 if _is_wall(tiles[0][2]) else 0],
+            [1 if _is_wall(tiles[1][0]) else 0, 1 if _is_wall(tiles[1][1]) else 0, 1 if _is_wall(tiles[1][2]) else 0],
+            [1 if _is_wall(tiles[2][0]) else 0, 1 if _is_wall(tiles[2][1]) else 0, 1 if _is_wall(tiles[2][2]) else 0]
+        ]
 
     def load(self, filename):
 
@@ -51,30 +83,10 @@ class Level:
                 y = (self.dungeon_map.map_height * GRID_SIZE) - (row * GRID_SIZE)
 
                 # Get a 2D array of the tile and its neighbors
-                tiles = [
-                    [
-                        self.dungeon_map.tiles[row - 1][column - 1] if row > 0 and column > 0 else None,
-                        self.dungeon_map.tiles[row - 1][column] if row > 0 else None,
-                        self.dungeon_map.tiles[row - 1][column + 1] if row > 0 and column < self.dungeon_map.map_width - 1 else None
-                    ],
-                    [
-                        self.dungeon_map.tiles[row][column - 1] if column > 0 else None,
-                        tile,
-                        self.dungeon_map.tiles[row][column + 1] if column < self.dungeon_map.map_width - 1 else None
-                    ],
-                    [
-                        self.dungeon_map.tiles[row + 1][column - 1] if row < self.dungeon_map.map_height - 1 and column > 0 else None,
-                        self.dungeon_map.tiles[row + 1][column] if row < self.dungeon_map.map_height - 1 else None,
-                        self.dungeon_map.tiles[row + 1][column + 1] if row < self.dungeon_map.map_height - 1 and column < self.dungeon_map.map_width - 1 else None
-                    ]
-                ]
+                tiles = self._get_surrounding_tiles(row, column)
 
                 # Create a 3x3 array of 1s and 0s based on if there is a wall or map edge
-                tile_exists = [
-                    [1 if _is_wall(tiles[0][0]) else 0, 1 if _is_wall(tiles[0][1]) else 0, 1 if _is_wall(tiles[0][2]) else 0],
-                    [1 if _is_wall(tiles[1][0]) else 0, 1 if _is_wall(tiles[1][1]) else 0, 1 if _is_wall(tiles[1][2]) else 0],
-                    [1 if _is_wall(tiles[2][0]) else 0, 1 if _is_wall(tiles[2][1]) else 0, 1 if _is_wall(tiles[2][2]) else 0]
-                ]
+                tile_exists = self._get_wall_array(tiles)
 
                 if tile.cell == 0 or tile.perimeter:
                     # Create array of booleans to represent the current setup of the tile and its neighbors
@@ -100,13 +112,13 @@ class Level:
                 if tile.door or tile.locked or tile.trapped or tile.secret:
                     left_tile = tile = self.dungeon_map.tiles[row][column - 1]
                     if left_tile.cell == 0 or left_tile.perimeter:
-                        texture = self.sprite_sheet_doors.get_texture(arcade.LBWH(0*32, 0*32, 32, 32))
+                        texture = self.sprite_sheet_doors.get_texture(arcade.LBWH(4*32, 0*32, 32, 32))
                     else:
-                        texture = self.sprite_sheet_doors.get_texture(arcade.LBWH(0*32, 0*32, 32, 32))
+                        texture = self.sprite_sheet_doors.get_texture(arcade.LBWH(3*32, 0*32, 32, 32))
                     sprite = Entity(texture, scale=SPRITE_SCALE)
 
-                    sprite.left = x
-                    sprite.bottom = y
+                    sprite.center_x = x + GRID_SIZE / 2
+                    sprite.center_y = y + GRID_SIZE / 2
 
                     self.door_list.append(sprite)
 
