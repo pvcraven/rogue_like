@@ -294,7 +294,7 @@ class MyGame(arcade.Window):
         source_sprite.hit_box = source_sprite.get_attack_hit_box()
         collision_list = arcade.check_for_collision_with_list(source_sprite, target_list)
         print("Hit:", len(collision_list))
-        # source_sprite.hit_box = original_hit_box
+        source_sprite.hit_box = original_hit_box
 
         print("Done")
 
