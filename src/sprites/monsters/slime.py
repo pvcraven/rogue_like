@@ -26,6 +26,7 @@ class Slime(AnimatedSprite):
         self.visible_color = 255, 255, 255, 255
         self.not_visible_color = 255, 255, 255, 0
         self.seen_color = 255, 255, 255, 0
+        self.health = 2
 
         sprite_sheet = SpriteSheet("sprites/Slime.png")
 
@@ -92,3 +93,12 @@ class Slime(AnimatedSprite):
                 self.animation_state = ANIMATION_STATE_IDLE_RIGHT
             else:
                 self.animation_state = ANIMATION_STATE_IDLE_LEFT
+
+    def take_damage(self, damage):
+        """Handle taking damage."""
+        # Implement damage handling logic here
+        print(f"{self.name} took {damage} damage.")
+        # For example, you could reduce health or trigger a death animation
+        self.health -= damage
+        if self.health <= 0:
+            self.kill()  # Or trigger a death animation
