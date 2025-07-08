@@ -1,6 +1,7 @@
 from arcade import SpriteSheet
 
 from sprites.animated_sprite import AnimatedSprite, load_100x100_textures
+from sprites.creature import Creature
 
 ANIMATION_STATE_IDLE_RIGHT = 0
 ANIMATION_STATE_WALK_RIGHT = 1
@@ -16,7 +17,7 @@ ANIMATION_STATE_ATTACK_2_LEFT = 9
 ANIMATION_HURT_LEFT = 9
 ANIMATION_DEATH_LEFT = 10
 
-class Slime(AnimatedSprite):
+class Slime(Creature):
     """
     Represents a monster entity with specific attributes and behaviors.
     Inherits from the Entity class.
@@ -39,19 +40,7 @@ class Slime(AnimatedSprite):
         # - Face Right
         # Idle, Walk, attack 1, attack 2, hurt, death
         sprite_count = [6, 6, 6, 6, 4, 4]
-        for i in range(len(sprite_count)):
-            self.texture_sets.append(
-                load_100x100_textures(sprite_sheet, row=i, count=sprite_count[i])
-            )
-
-        # - Face Left
-        sprite_sheet.flip_left_right()
-        for i in range(len(sprite_count)):
-            self.texture_sets.append(
-                load_100x100_textures(
-                    sprite_sheet, row=i, count=sprite_count[i], from_right=True
-                )
-            )
+        self._load_textures(sprite_sheet, sprite_count)
 
     def attack_1(self):
         if self.attack_animation > 0:
