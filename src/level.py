@@ -2,16 +2,19 @@
 Sprites for a dungeon level.
 """
 
+import random
+
 import arcade
 
 from constants import GRID_SIZE, SPRITE_SCALE
 from dungeon_map import DungeonMap
 from match_array import match_array
+from sprites.animated_sprite import AnimatedSprite
 from sprites.entity import Entity
 from sprites.monsters.slime import Slime
-from wall_texture_map import FLOOR_TILE_1, UNKNOWN, WALL_TEXTURE_MAP
-import random
 from util import grid_to_pixel
+from wall_texture_map import FLOOR_TILE_1, UNKNOWN, WALL_TEXTURE_MAP
+
 
 def _is_wall(tile):
     return tile is not None and (tile.cell == 0 or tile.perimeter)
@@ -200,3 +203,21 @@ class Level:
         Get a list of stair down sprites
         """
         return [sprite for sprite in self.door_list if sprite.tile.stair_down]
+
+    def attack(self, source_sprite: AnimatedSprite, target_list: arcade.SpriteList):
+        """
+        Handle attacks from the player to the target list.
+
+        Args:
+            source_sprite (AnimatedSprite): The sprite initiating the attack.
+            target_list (arcade.SpriteList): The list of target sprites.
+        """
+        original_hit_box = source_sprite.hit_box
+        source_sprite.hit_box = source_sprite.get_attack_hit_box()
+        collision_list = arcade.check_for_collision_with_list(source_sprite, target_list)
+        print("Hit:", len(collision_list))
+        for sprite in collision_list:
+            sprite.take_damage(source_sprite.get_attack_damage())
+        source_sprite.hit_box = original_hit_box
+
+        print("Done")

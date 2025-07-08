@@ -10,8 +10,6 @@ from constants import (
 )
 from level import Level
 from recalculate_fov import recalculate_fov
-from sprites.animated_sprite import AnimatedSprite
-from sprites.monsters.slime import Slime
 from sprites.player import PlayerSprite
 from util import pixel_to_grid
 
@@ -261,7 +259,7 @@ class MyGame(arcade.Window):
             self.player_sprite.attack_2()
         elif button == arcade.MOUSE_BUTTON_MIDDLE:
             self.player_sprite.attack_3()
-        self.attack(
+        self.level.attack(
             self.player_sprite,
             self.level.monster_list,
         )
@@ -282,23 +280,7 @@ class MyGame(arcade.Window):
             camera_speed,
         )
 
-    def attack(self, source_sprite: AnimatedSprite, target_list: arcade.SpriteList):
-        """
-        Handle attacks from the player to the target list.
 
-        Args:
-            source_sprite (arcade.Sprite): The sprite initiating the attack.
-            target_list (arcade.SpriteList): The list of target sprites.
-        """
-        original_hit_box = source_sprite.hit_box
-        source_sprite.hit_box = source_sprite.get_attack_hit_box()
-        collision_list = arcade.check_for_collision_with_list(source_sprite, target_list)
-        print("Hit:", len(collision_list))
-        for sprite in collision_list:
-            sprite.take_damage(source_sprite.get_attack_damage())
-        source_sprite.hit_box = original_hit_box
-
-        print("Done")
 
     def on_resize(self, width: int, height: int):
         """

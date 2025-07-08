@@ -1,6 +1,6 @@
-from sprites.animated_sprite import load_100x100_textures
 from arcade import SpriteSheet
-from sprites.animated_sprite import AnimatedSprite
+
+from sprites.animated_sprite import AnimatedSprite, load_100x100_textures
 
 ANIMATION_STATE_IDLE_RIGHT = 0
 ANIMATION_STATE_WALK_RIGHT = 1
