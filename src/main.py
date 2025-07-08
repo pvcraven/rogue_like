@@ -93,6 +93,9 @@ class MyGame(arcade.Window):
             self.levels.append(level)
 
         self.level = self.levels[self.cur_level]
+        
+        # Set the player's level reference
+        self.player_sprite.level = self.level
 
         # Set player position to the first set of stairs
         self.set_player_position_to_stairs(stairs_up=True)
@@ -168,12 +171,14 @@ class MyGame(arcade.Window):
                 if self.cur_level < len(self.levels):
                     self.cur_level += 1
                     self.level = self.levels[self.cur_level]
+                    self.player_sprite.level = self.level
                     self.set_player_position_to_stairs(stairs_up=True)
             elif cur_tile.stair_up:
                 print("UP STAIRS")
                 if self.cur_level > 0:
                     self.cur_level -= 1
                     self.level = self.levels[self.cur_level]
+                    self.player_sprite.level = self.level
                     self.set_player_position_to_stairs(stairs_up=False)
 
     def on_mouse_scroll(self, x: int, y: int, scroll_x: int, scroll_y: int):
@@ -259,10 +264,6 @@ class MyGame(arcade.Window):
             self.player_sprite.attack_2()
         elif button == arcade.MOUSE_BUTTON_MIDDLE:
             self.player_sprite.attack_3()
-        self.level.attack(
-            self.player_sprite,
-            self.level.monster_list,
-        )
 
     def scroll_to_player(self, camera_speed: float = CAMERA_SPEED):
         """

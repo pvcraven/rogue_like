@@ -27,6 +27,8 @@ class Slime(AnimatedSprite):
         self.not_visible_color = 255, 255, 255, 0
         self.seen_color = 255, 255, 255, 0
         self.health = 2
+        self.texture_clock = 0
+        self.animation_state = ANIMATION_STATE_WALK_LEFT
 
         sprite_sheet = SpriteSheet("sprites/Slime.png")
 
@@ -101,4 +103,4 @@ class Slime(AnimatedSprite):
         # For example, you could reduce health or trigger a death animation
         self.health -= damage
         if self.health <= 0:
-            self.kill()  # Or trigger a death animation
+            self.remove_from_sprite_lists()

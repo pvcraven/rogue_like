@@ -21,6 +21,9 @@ def _is_wall(tile):
 
 
 class Level:
+    """
+    Represents a dungeon level with walls, doors, and monsters.
+    """
     def __init__(self):
 
         # Create the dungeon map
@@ -73,7 +76,7 @@ class Level:
         ]
 
     def load(self, filename):
-
+        """ Load the level from a JSON file and create sprites for walls, doors, and monsters. """
         # Load the map
         self.dungeon_map.load(filename)
 
@@ -189,8 +192,6 @@ class Level:
                     monster = Slime()
                     monster.position = (x, y)
                     self.monster_list.append(monster)
-
-
 
     def get_stairs_up(self):
         """
