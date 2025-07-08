@@ -6,11 +6,15 @@ ANIMATION_STATE_IDLE_RIGHT = 0
 ANIMATION_STATE_WALK_RIGHT = 1
 ANIMATION_STATE_ATTACK_1_RIGHT = 2
 ANIMATION_STATE_ATTACK_2_RIGHT = 3
+ANIMATION_HURT_RIGHT = 4
+ANIMATION_DEATH_RIGHT = 5
 
-ANIMATION_STATE_IDLE_LEFT = 4
-ANIMATION_STATE_WALK_LEFT = 5
-ANIMATION_STATE_ATTACK_1_LEFT = 6
-ANIMATION_STATE_ATTACK_2_LEFT = 7
+ANIMATION_STATE_IDLE_LEFT = 6
+ANIMATION_STATE_WALK_LEFT = 7
+ANIMATION_STATE_ATTACK_1_LEFT = 8
+ANIMATION_STATE_ATTACK_2_LEFT = 9
+ANIMATION_HURT_LEFT = 9
+ANIMATION_DEATH_LEFT = 10
 
 class Slime(AnimatedSprite):
     """
@@ -33,8 +37,8 @@ class Slime(AnimatedSprite):
         sprite_sheet = SpriteSheet("sprites/Slime.png")
 
         # - Face Right
-        # Idle, Walk, attack 1, attack 2
-        sprite_count = [6, 6, 6, 6]
+        # Idle, Walk, attack 1, attack 2, hurt, death
+        sprite_count = [6, 6, 6, 6, 4, 4]
         for i in range(len(sprite_count)):
             self.texture_sets.append(
                 load_100x100_textures(sprite_sheet, row=i, count=sprite_count[i])
@@ -77,6 +81,26 @@ class Slime(AnimatedSprite):
             if self.texture_clock >= animation_length:
                 self.attack_animation = 0
 
+        if self.animation_state == ANIMATION_DEATH_LEFT:
+            animation_length = len(self.texture_sets[self.animation_state]) / 10
+            if self.texture_clock >= animation_length:
+                self.remove_from_sprite_lists()
+                
+        elif self.animation_state == ANIMATION_DEATH_RIGHT:
+            animation_length = len(self.texture_sets[self.animation_state]) / 10
+            if self.texture_clock >= animation_length:
+                self.remove_from_sprite_lists()
+
+        elif self.animation_state == ANIMATION_HURT_LEFT:
+            animation_length = len(self.texture_sets[self.animation_state]) / 10
+            if self.texture_clock >= animation_length:
+                self.animation_state = ANIMATION_STATE_IDLE_LEFT
+                
+        elif self.animation_state == ANIMATION_HURT_RIGHT:
+            animation_length = len(self.texture_sets[self.animation_state]) / 10
+            if self.texture_clock >= animation_length:
+                self.animation_state = ANIMATION_STATE_IDLE_RIGHT
+
         elif self.change_x < 0:
             self.is_facing_right = False
             self.animation_state = ANIMATION_STATE_WALK_LEFT
@@ -102,5 +126,15 @@ class Slime(AnimatedSprite):
         print(f"{self.name} took {damage} damage.")
         # For example, you could reduce health or trigger a death animation
         self.health -= damage
-        if self.health <= 0:
-            self.remove_from_sprite_lists()
+
+        self.texture_clock = 0
+        if self.health > 0:
+            if self.is_facing_right:
+                self.animation_state = ANIMATION_HURT_RIGHT
+            else:
+                self.animation_state = ANIMATION_HURT_LEFT
+        else:
+            if self.is_facing_right:
+                self.animation_state = ANIMATION_DEATH_RIGHT
+            else:
+                self.animation_state = ANIMATION_DEATH_LEFT
