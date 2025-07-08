@@ -10,5 +10,4 @@ class Entity(arcade.Sprite):
         self.not_visible_color = 255, 255, 255, 0
         self.seen_color = 255, 255, 255, 128
         self.tile = None
-        # self.not_visible_color = arcade.color.BLACK
-        # self.seen_color = arcade.color.GRAY
+        self.color = self.not_visible_color

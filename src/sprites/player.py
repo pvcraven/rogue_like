@@ -44,6 +44,7 @@ class PlayerSprite(AnimatedSprite):
 
         self.animation_state = ANIMATION_STATE_IDLE_RIGHT
 
+
     def attack_1(self):
         if self.attack_animation > 0:
             return
@@ -53,6 +54,13 @@ class PlayerSprite(AnimatedSprite):
             self.animation_state = ANIMATION_STATE_ATTACK_1_RIGHT
         else:
             self.animation_state = ANIMATION_STATE_ATTACK_1_LEFT
+
+    def get_attack_hit_box(self):
+        # attack_texture = self.texture_sets[ANIMATION_STATE_ATTACK_1_LEFT][3]
+        # return arcade.hitbox.HitBox(attack_texture.hit_box_points)
+        # print(self.texture_sets[ANIMATION_STATE_ATTACK_1_LEFT][3].hit_box_points)
+        hitbox = ((-40, -40), (40, -40), (40, 40), (-40, 40))
+        return arcade.hitbox.HitBox(hitbox)
 
     def attack_2(self):
         if self.attack_animation > 0:

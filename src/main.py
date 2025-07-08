@@ -10,7 +10,7 @@ from constants import (
 )
 from level import Level
 from recalculate_fov import recalculate_fov
-from sprites.monsters.monster1a import Monster1A
+from sprites.animated_sprite import AnimatedSprite
 from sprites.monsters.slime import Slime
 from sprites.player import PlayerSprite
 from util import pixel_to_grid
@@ -84,13 +84,14 @@ class MyGame(arcade.Window):
 
         # Set up the player
         self.player_sprite = PlayerSprite()
+        self.player_sprite.color = self.player_sprite.visible_color
         self.player_list.append(self.player_sprite)
 
         # Load the dungeon map
         for level_file_name in LEVEL_FILE_NAMES:
             level = Level()
             level.load(level_file_name)
-            level.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, level.wall_list)
+            level.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, [level.wall_list, level.monster_list])
             self.levels.append(level)
 
         self.level = self.levels[self.cur_level]
@@ -119,6 +120,7 @@ class MyGame(arcade.Window):
         self.level.door_list.draw(pixelated=True)
         self.level.monster_list.draw(pixelated=True)
         self.player_list.draw(pixelated=True)
+        self.player_list.draw_hit_boxes()
 
         # Select the (unscrolled) camera for our GUI
         self.camera_gui.use()
@@ -230,6 +232,7 @@ class MyGame(arcade.Window):
                 self.level.wall_list,
                 self.level.door_list,
                 self.level.background_list,
+                self.level.monster_list,
             ]
             recalculate_fov(
                 char_x=pos_grid[0],
@@ -242,17 +245,26 @@ class MyGame(arcade.Window):
         # Scroll the screen to the player
         self.scroll_to_player()
 
-    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
-        l = self.camera_sprites.position[0]
-        b = self.camera_sprites.position[1]
-        adjusted_x = l + x
-        adjusted_y = b + y
-        column = int(adjusted_x // GRID_SIZE)
-        row = int(self.level.dungeon_map.map_height - (adjusted_y // GRID_SIZE))
-        tile = self.level.dungeon_map.tiles[row][column]
-        print()
-        print(f"{row=} {column=}")
-        self.level.dungeon_map.print_cell(tile.cell)
+    def on_mouse_press(self, x, y, button, modifiers):
+        """
+        Handle mouse press events to trigger player attacks.
+
+        Args:
+            x (float): X-coordinate of the mouse click.
+            y (float): Y-coordinate of the mouse click.
+            button (int): Mouse button pressed.
+            modifiers (int): Modifier keys pressed (e.g., Shift, Ctrl).
+        """
+        if button == arcade.MOUSE_BUTTON_LEFT:
+            self.player_sprite.attack_1()
+        elif button == arcade.MOUSE_BUTTON_RIGHT:
+            self.player_sprite.attack_2()
+        elif button == arcade.MOUSE_BUTTON_MIDDLE:
+            self.player_sprite.attack_3()
+        self.attack(
+            self.player_sprite,
+            self.level.monster_list,
+        )
 
     def scroll_to_player(self, camera_speed: float = CAMERA_SPEED):
         """
@@ -269,6 +281,22 @@ class MyGame(arcade.Window):
             position,
             camera_speed,
         )
+
+    def attack(self, source_sprite: AnimatedSprite, target_list: arcade.SpriteList):
+        """
+        Handle attacks from the player to the target list.
+
+        Args:
+            source_sprite (arcade.Sprite): The sprite initiating the attack.
+            target_list (arcade.SpriteList): The list of target sprites.
+        """
+        original_hit_box = source_sprite.hit_box
+        source_sprite.hit_box = source_sprite.get_attack_hit_box()
+        collision_list = arcade.check_for_collision_with_list(source_sprite, target_list)
+        print("Hit:", len(collision_list))
+        # source_sprite.hit_box = original_hit_box
+
+        print("Done")
 
     def on_resize(self, width: int, height: int):
         """

@@ -1,6 +1,7 @@
 import arcade
 
 from constants import SPRITE_SCALE
+from sprites.entity import Entity
 
 
 def load_100x100_textures(
@@ -39,7 +40,7 @@ def load_64x64_textures(
         textures.append(texture)
     return textures
 
-class AnimatedSprite(arcade.Sprite):
+class AnimatedSprite(Entity):
     def __init__(self):
         super().__init__(scale=SPRITE_SCALE)
         self.center_x = 0
@@ -48,6 +49,9 @@ class AnimatedSprite(arcade.Sprite):
         self.animation_state = 0
         self.texture_sets = []
         self.frame = 0
+        self.block_sight = False
+        self.attack_hit_box = self.hit_box
+
 
     def update_position(self, window_width, window_height):
         # Position the player in the middle of the window
