@@ -8,7 +8,10 @@ from constants import GRID_SIZE, SPRITE_SCALE
 from dungeon_map import DungeonMap
 from match_array import match_array
 from sprites.entity import Entity
+from sprites.monsters.slime import Slime
 from wall_texture_map import FLOOR_TILE_1, UNKNOWN, WALL_TEXTURE_MAP
+import random
+from util import grid_to_pixel
 
 def _is_wall(tile):
     return tile is not None and (tile.cell == 0 or tile.perimeter)
@@ -24,6 +27,7 @@ class Level:
         self.wall_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
         self.background_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
         self.door_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
+        self.monster_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=False)
 
         # Load sprite sheets
         self.sprite_sheet_1 = arcade.SpriteSheet("sprites/walls.png")
@@ -165,6 +169,24 @@ class Level:
                     sprite.left = x
                     sprite.bottom = y
                     self.background_list.append(sprite)
+
+        for room in self.dungeon_map.json['rooms']:
+            if room:
+                north = room['north']
+                south = room['south']
+                east = room['east']
+                west = room['west']
+                id = room['id']
+                # print(f"Room {id}: North {north}, South {south}, East {east}, West {west}")
+                if int(id) == 6:
+                    rand_row = random.randint(north, south)
+                    rand_col = random.randint(west, east)
+                    x, y = grid_to_pixel(rand_col, rand_row, self.dungeon_map.map_height)
+                    print(f"Random tile in room {id}: row={rand_row}, col={rand_col}")
+                    monster = Slime()
+                    monster.position = (x, y)
+                    self.monster_list.append(monster)
+
 
 
     def get_stairs_up(self):

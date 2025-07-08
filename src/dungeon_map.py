@@ -56,10 +56,12 @@ class DungeonMap:
         self.rooms = {}
         self.map_height = 0
         self.map_width = 0
+        self.json = {}
 
     def load(self, filename):
         f = open(filename, encoding="utf-8")
         data = json.load(f)
+        self.json = data
         self.cells = data["cells"]
         self.bitmask = data["cell_bit"]
         rooms_dict = data["rooms"]

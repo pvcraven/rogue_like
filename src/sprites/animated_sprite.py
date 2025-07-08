@@ -21,6 +21,23 @@ def load_100x100_textures(
         textures.append(texture)
     return textures
 
+def load_64x64_textures(
+    sprite_sheet: arcade.SpriteSheet, row, count, from_right=False
+):
+    textures = []
+    sheet_width = sprite_sheet.image.width
+    for i in range(count):
+        if from_right:
+            # Adjust the x position for left-facing textures
+            x = sheet_width - (16 + i * 64)
+        else:
+            # Adjust the x position for right-facing textures
+            x = 16 + i * 64
+
+        y = 64 * row + 16
+        texture = sprite_sheet.get_texture(rect=arcade.XYWH(x, y, 64, 64))
+        textures.append(texture)
+    return textures
 
 class AnimatedSprite(arcade.Sprite):
     def __init__(self):

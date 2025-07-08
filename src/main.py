@@ -10,6 +10,8 @@ from constants import (
 )
 from level import Level
 from recalculate_fov import recalculate_fov
+from sprites.monsters.monster1a import Monster1A
+from sprites.monsters.slime import Slime
 from sprites.player import PlayerSprite
 from util import pixel_to_grid
 
@@ -115,6 +117,7 @@ class MyGame(arcade.Window):
         self.level.background_list.draw(pixelated=True)
         self.level.wall_list.draw(pixelated=True)
         self.level.door_list.draw(pixelated=True)
+        self.level.monster_list.draw(pixelated=True)
         self.player_list.draw(pixelated=True)
 
         # Select the (unscrolled) camera for our GUI
@@ -173,9 +176,6 @@ class MyGame(arcade.Window):
                     self.level = self.levels[self.cur_level]
                     self.set_player_position_to_stairs(stairs_up=False)
 
-
-
-
     def on_mouse_scroll(self, x: int, y: int, scroll_x: int, scroll_y: int):
         """Handle mouse wheel scroll events."""
         # Zoom the camera in/out with the mouse wheel
@@ -214,6 +214,7 @@ class MyGame(arcade.Window):
             self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
 
         self.player_sprite.update(delta_time)
+        self.level.monster_list.update(delta_time)
 
         self.level.physics_engine.update()
 
