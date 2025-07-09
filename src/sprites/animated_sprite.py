@@ -22,9 +22,8 @@ def load_100x100_textures(
         textures.append(texture)
     return textures
 
-def load_64x64_textures(
-    sprite_sheet: arcade.SpriteSheet, row, count, from_right=False
-):
+
+def load_64x64_textures(sprite_sheet: arcade.SpriteSheet, row, count, from_right=False):
     textures = []
     sheet_width = sprite_sheet.image.width
     for i in range(count):
@@ -40,6 +39,7 @@ def load_64x64_textures(
         textures.append(texture)
     return textures
 
+
 class AnimatedSprite(Entity):
     def __init__(self):
         super().__init__(scale=SPRITE_SCALE)
@@ -51,7 +51,6 @@ class AnimatedSprite(Entity):
         self.frame = 0
         self.block_sight = False
         self.attack_hit_box = self.hit_box
-
 
     def update_position(self, window_width, window_height):
         # Position the player in the middle of the window
