@@ -1,19 +1,20 @@
 import arcade
 
-from sprites.animated_sprite import AnimatedSprite, load_100x100_textures
-from sprites.creature import Creature
+from sprites.creature import Creature, AnimationStates
 
-ANIMATION_STATE_IDLE_RIGHT = 0
-ANIMATION_STATE_WALK_RIGHT = 1
-ANIMATION_STATE_ATTACK_1_RIGHT = 2
-ANIMATION_STATE_ATTACK_2_RIGHT = 3
-ANIMATION_STATE_ATTACK_3_RIGHT = 4
+class PlayerAnimationStates(AnimationStates):
+    """Animation states specific to the Player"""
+    IDLE_RIGHT = 0
+    WALK_RIGHT = 1
+    ATTACK_1_RIGHT = 2
+    ATTACK_2_RIGHT = 3
+    ATTACK_3_RIGHT = 4
 
-ANIMATION_STATE_IDLE_LEFT = 5
-ANIMATION_STATE_WALK_LEFT = 6
-ANIMATION_STATE_ATTACK_1_LEFT = 7
-ANIMATION_STATE_ATTACK_2_LEFT = 8
-ANIMATION_STATE_ATTACK_3_LEFT = 9
+    IDLE_LEFT = 5
+    WALK_LEFT = 6
+    ATTACK_1_LEFT = 7
+    ATTACK_2_LEFT = 8
+    ATTACK_3_LEFT = 9
 
 
 class PlayerSprite(Creature):
@@ -29,6 +30,10 @@ class PlayerSprite(Creature):
         sprite_count = [6, 8, 6, 6, 9]
         self._load_textures(sprite_sheet, sprite_count)
 
+    def get_animation_states(self):
+        """Return the animation states class for the Player"""
+        return PlayerAnimationStates
+
     def get_attack_hit_box(self):
         # attack_texture = self.texture_sets[ANIMATION_STATE_ATTACK_1_LEFT][3]
         # return arcade.hitbox.HitBox(attack_texture.hit_box_points)
@@ -39,19 +44,17 @@ class PlayerSprite(Creature):
             hitbox_points = (0, 25), (0, -25), (-40, -30), (-40, 30)
         return arcade.hitbox.HitBox(points=hitbox_points, position=self.position)
 
-    def get_attack_damage(self):
-        return 1
-
     def attack_1(self):
         if self.attack_animation > 0:
             return
         self.attack_animation = 1
         self.texture_clock = 0
         self.attack_triggered = False
+        anim = self.get_animation_states()
         if self.is_facing_right:
-            self.animation_state = ANIMATION_STATE_ATTACK_1_RIGHT
+            self.animation_state = anim.ATTACK_1_RIGHT
         else:
-            self.animation_state = ANIMATION_STATE_ATTACK_1_LEFT
+            self.animation_state = anim.ATTACK_1_LEFT
 
     def attack_2(self):
         if self.attack_animation > 0:
@@ -59,10 +62,11 @@ class PlayerSprite(Creature):
         self.attack_animation = 2
         self.texture_clock = 0
         self.attack_triggered = False
+        anim = self.get_animation_states()
         if self.is_facing_right:
-            self.animation_state = ANIMATION_STATE_ATTACK_2_RIGHT
+            self.animation_state = anim.ATTACK_2_RIGHT
         else:
-            self.animation_state = ANIMATION_STATE_ATTACK_2_LEFT
+            self.animation_state = anim.ATTACK_2_LEFT
 
     def attack_3(self):
         """Attack 3 animation."""
@@ -71,14 +75,17 @@ class PlayerSprite(Creature):
         self.attack_animation = 3
         self.texture_clock = 0
         self.attack_triggered = False
+        anim = self.get_animation_states()
         if self.is_facing_right:
-            self.animation_state = ANIMATION_STATE_ATTACK_3_RIGHT
+            self.animation_state = anim.ATTACK_3_RIGHT
         else:
-            self.animation_state = ANIMATION_STATE_ATTACK_3_LEFT
+            self.animation_state = anim.ATTACK_3_LEFT
 
     def update(self, delta_time):
         super().update(delta_time)
 
+        anim = self.get_animation_states()
+        
         if self.attack_animation > 0:
             animation_length = len(self.texture_sets[self.animation_state]) / 10
             halfway_point = animation_length / 2
@@ -94,19 +101,19 @@ class PlayerSprite(Creature):
 
         elif self.change_x < 0:
             self.is_facing_right = False
-            self.animation_state = ANIMATION_STATE_WALK_LEFT
+            self.animation_state = anim.WALK_LEFT
 
         elif self.change_x > 0:
             self.is_facing_right = True
-            self.animation_state = ANIMATION_STATE_WALK_RIGHT
+            self.animation_state = anim.WALK_RIGHT
 
         elif self.change_y != 0:
             if self.is_facing_right:
-                self.animation_state = ANIMATION_STATE_WALK_RIGHT
+                self.animation_state = anim.WALK_RIGHT
             else:
-                self.animation_state = ANIMATION_STATE_WALK_LEFT
+                self.animation_state = anim.WALK_LEFT
         else:
             if self.is_facing_right:
-                self.animation_state = ANIMATION_STATE_IDLE_RIGHT
+                self.animation_state = anim.IDLE_RIGHT
             else:
-                self.animation_state = ANIMATION_STATE_IDLE_LEFT
+                self.animation_state = anim.IDLE_LEFT

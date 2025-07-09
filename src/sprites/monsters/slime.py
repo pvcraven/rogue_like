@@ -1,21 +1,25 @@
 from arcade import SpriteSheet
 
-from sprites.animated_sprite import AnimatedSprite, load_100x100_textures
-from sprites.creature import Creature
+from sprites.creature import Creature, AnimationStates
 
-ANIMATION_STATE_IDLE_RIGHT = 0
-ANIMATION_STATE_WALK_RIGHT = 1
-ANIMATION_STATE_ATTACK_1_RIGHT = 2
-ANIMATION_STATE_ATTACK_2_RIGHT = 3
-ANIMATION_HURT_RIGHT = 4
-ANIMATION_DEATH_RIGHT = 5
 
-ANIMATION_STATE_IDLE_LEFT = 6
-ANIMATION_STATE_WALK_LEFT = 7
-ANIMATION_STATE_ATTACK_1_LEFT = 8
-ANIMATION_STATE_ATTACK_2_LEFT = 9
-ANIMATION_HURT_LEFT = 9
-ANIMATION_DEATH_LEFT = 10
+class SlimeAnimationStates(AnimationStates):
+    """Animation states specific to the Slime"""
+
+    IDLE_RIGHT = 0
+    WALK_RIGHT = 1
+    ATTACK_1_RIGHT = 2
+    ATTACK_2_RIGHT = 3
+    HURT_RIGHT = 4
+    DEATH_RIGHT = 5
+
+    IDLE_LEFT = 6
+    WALK_LEFT = 7
+    ATTACK_1_LEFT = 8
+    ATTACK_2_LEFT = 9
+    HURT_LEFT = 10  # Fixed: was 9, now 10
+    DEATH_LEFT = 11  # Fixed: was 10, now 11
+
 
 class Slime(Creature):
     """
@@ -33,7 +37,7 @@ class Slime(Creature):
         self.seen_color = 255, 255, 255, 0
         self.health = 2
         self.texture_clock = 0
-        self.animation_state = ANIMATION_STATE_WALK_LEFT
+        self.animation_state = self.get_animation_states().WALK_LEFT
 
         sprite_sheet = SpriteSheet("sprites/Slime.png")
 
@@ -42,88 +46,77 @@ class Slime(Creature):
         sprite_count = [6, 6, 6, 6, 4, 4]
         self._load_textures(sprite_sheet, sprite_count)
 
+    def get_animation_states(self):
+        """Return the animation states class for the Slime"""
+        return SlimeAnimationStates
+
     def attack_1(self):
         if self.attack_animation > 0:
             return
         self.attack_animation = 1
         self.texture_clock = 0
+        anim = self.get_animation_states()
         if self.is_facing_right:
-            self.animation_state = ANIMATION_STATE_ATTACK_1_RIGHT
+            self.animation_state = anim.ATTACK_1_RIGHT
         else:
-            self.animation_state = ANIMATION_STATE_ATTACK_1_LEFT
+            self.animation_state = anim.ATTACK_1_LEFT
 
     def attack_2(self):
         if self.attack_animation > 0:
             return
         self.attack_animation = 2
         self.texture_clock = 0
+        anim = self.get_animation_states()
         if self.is_facing_right:
-            self.animation_state = ANIMATION_STATE_ATTACK_2_RIGHT
+            self.animation_state = anim.ATTACK_2_RIGHT
         else:
-            self.animation_state = ANIMATION_STATE_ATTACK_2_LEFT
+            self.animation_state = anim.ATTACK_2_LEFT
 
     def update(self, delta_time):
         super().update(delta_time)
+
+        anim = self.get_animation_states()
 
         if self.attack_animation > 0:
             animation_length = len(self.texture_sets[self.animation_state]) / 10
             if self.texture_clock >= animation_length:
                 self.attack_animation = 0
 
-        if self.animation_state == ANIMATION_DEATH_LEFT:
-            animation_length = len(self.texture_sets[self.animation_state]) / 10
-            if self.texture_clock >= animation_length:
-                self.remove_from_sprite_lists()
-                
-        elif self.animation_state == ANIMATION_DEATH_RIGHT:
+        if self.animation_state == anim.DEATH_LEFT:
             animation_length = len(self.texture_sets[self.animation_state]) / 10
             if self.texture_clock >= animation_length:
                 self.remove_from_sprite_lists()
 
-        elif self.animation_state == ANIMATION_HURT_LEFT:
+        elif self.animation_state == anim.DEATH_RIGHT:
             animation_length = len(self.texture_sets[self.animation_state]) / 10
             if self.texture_clock >= animation_length:
-                self.animation_state = ANIMATION_STATE_IDLE_LEFT
-                
-        elif self.animation_state == ANIMATION_HURT_RIGHT:
+                self.remove_from_sprite_lists()
+
+        elif self.animation_state == anim.HURT_LEFT:
             animation_length = len(self.texture_sets[self.animation_state]) / 10
             if self.texture_clock >= animation_length:
-                self.animation_state = ANIMATION_STATE_IDLE_RIGHT
+                self.animation_state = anim.IDLE_LEFT
+
+        elif self.animation_state == anim.HURT_RIGHT:
+            animation_length = len(self.texture_sets[self.animation_state]) / 10
+            if self.texture_clock >= animation_length:
+                self.animation_state = anim.IDLE_RIGHT
 
         elif self.change_x < 0:
             self.is_facing_right = False
-            self.animation_state = ANIMATION_STATE_WALK_LEFT
+            self.animation_state = anim.WALK_LEFT
 
         elif self.change_x > 0:
             self.is_facing_right = True
-            self.animation_state = ANIMATION_STATE_WALK_RIGHT
+            self.animation_state = anim.WALK_RIGHT
 
         elif self.change_y != 0:
             if self.is_facing_right:
-                self.animation_state = ANIMATION_STATE_WALK_RIGHT
+                self.animation_state = anim.WALK_RIGHT
             else:
-                self.animation_state = ANIMATION_STATE_WALK_LEFT
+                self.animation_state = anim.WALK_LEFT
         else:
             if self.is_facing_right:
-                self.animation_state = ANIMATION_STATE_IDLE_RIGHT
+                self.animation_state = anim.IDLE_RIGHT
             else:
-                self.animation_state = ANIMATION_STATE_IDLE_LEFT
-
-    def take_damage(self, damage):
-        """Handle taking damage."""
-        # Implement damage handling logic here
-        print(f"{self.name} took {damage} damage.")
-        # For example, you could reduce health or trigger a death animation
-        self.health -= damage
-
-        self.texture_clock = 0
-        if self.health > 0:
-            if self.is_facing_right:
-                self.animation_state = ANIMATION_HURT_RIGHT
-            else:
-                self.animation_state = ANIMATION_HURT_LEFT
-        else:
-            if self.is_facing_right:
-                self.animation_state = ANIMATION_DEATH_RIGHT
-            else:
-                self.animation_state = ANIMATION_DEATH_LEFT
+                self.animation_state = anim.IDLE_LEFT
