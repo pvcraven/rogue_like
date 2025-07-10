@@ -24,7 +24,7 @@ class Level:
     """
     Represents a dungeon level with walls, doors, and monsters.
     """
-    def __init__(self):
+    def __init__(self, player_list: arcade.SpriteList):
 
         # Create the dungeon map
         self.dungeon_map: DungeonMap = DungeonMap()
@@ -34,6 +34,7 @@ class Level:
         self.background_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
         self.door_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
         self.monster_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=False)
+        self.player_list = player_list
 
         # Load sprite sheets
         self.sprite_sheet_1 = arcade.SpriteSheet("sprites/walls.png")
@@ -189,7 +190,7 @@ class Level:
                     rand_col = random.randint(west, east)
                     x, y = grid_to_pixel(rand_col, rand_row, self.dungeon_map.map_height)
                     print(f"Random tile in room {id}: row={rand_row}, col={rand_col}")
-                    monster = Slime()
+                    monster = Slime(level=self)
                     monster.position = (x, y)
                     self.monster_list.append(monster)
 

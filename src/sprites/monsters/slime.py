@@ -1,3 +1,4 @@
+import arcade
 from arcade import SpriteSheet
 
 from sprites.creature import Creature, AnimationStates
@@ -17,8 +18,8 @@ class SlimeAnimationStates(AnimationStates):
     WALK_LEFT = 7
     ATTACK_1_LEFT = 8
     ATTACK_2_LEFT = 9
-    HURT_LEFT = 10  # Fixed: was 9, now 10
-    DEATH_LEFT = 11  # Fixed: was 10, now 11
+    HURT_LEFT = 10
+    DEATH_LEFT = 11
 
 
 class Slime(Creature):
@@ -27,8 +28,8 @@ class Slime(Creature):
     Inherits from the Entity class.
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, level=None):
+        super().__init__(level=level)
         self.name = "Slime"
         self.is_facing_right = True
         self.attack_animation = 0
@@ -50,28 +51,6 @@ class Slime(Creature):
         """Return the animation states class for the Slime"""
         return SlimeAnimationStates
 
-    def attack_1(self):
-        if self.attack_animation > 0:
-            return
-        self.attack_animation = 1
-        self.texture_clock = 0
-        anim = self.get_animation_states()
-        if self.is_facing_right:
-            self.animation_state = anim.ATTACK_1_RIGHT
-        else:
-            self.animation_state = anim.ATTACK_1_LEFT
-
-    def attack_2(self):
-        if self.attack_animation > 0:
-            return
-        self.attack_animation = 2
-        self.texture_clock = 0
-        anim = self.get_animation_states()
-        if self.is_facing_right:
-            self.animation_state = anim.ATTACK_2_RIGHT
-        else:
-            self.animation_state = anim.ATTACK_2_LEFT
-
     def update(self, delta_time):
         super().update(delta_time)
 
@@ -79,10 +58,22 @@ class Slime(Creature):
 
         if self.attack_animation > 0:
             animation_length = len(self.texture_sets[self.animation_state]) / 10
+            halfway_point = animation_length / 2
+
+            # Trigger attack at halfway point if not already triggered
+            if (
+                not self.attack_triggered
+                and self.texture_clock >= halfway_point
+                and self.level
+            ):
+                self.attack_triggered = True
+                self.level.attack(self, self.level.player_list)
+
             if self.texture_clock >= animation_length:
                 self.attack_animation = 0
+                self.attack_triggered = False
 
-        if self.animation_state == anim.DEATH_LEFT:
+        elif self.animation_state == anim.DEATH_LEFT:
             animation_length = len(self.texture_sets[self.animation_state]) / 10
             if self.texture_clock >= animation_length:
                 self.remove_from_sprite_lists()
@@ -120,3 +111,11 @@ class Slime(Creature):
                 self.animation_state = anim.IDLE_RIGHT
             else:
                 self.animation_state = anim.IDLE_LEFT
+
+        for player in self.level.player_list:
+            distance = arcade.get_distance_between_sprites(self, player)
+            if distance < 100 and not self.attack_animation:
+                self.animation_state = (
+                    anim.ATTACK_1_RIGHT if self.is_facing_right else anim.ATTACK_1_LEFT
+                )
+                self.attack_1()

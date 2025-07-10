@@ -1,3 +1,4 @@
+import arcade
 from sprites.animated_sprite import AnimatedSprite, load_100x100_textures
 
 
@@ -18,12 +19,16 @@ class AnimationStates:
 
 class Creature(AnimatedSprite):
 
-    def __init__(self):
+    def __init__(self, level=None):
         super().__init__()
-        self.is_facing_right = True
-        self.attack_animation = 0
-        self.level = None
-        self.attack_triggered = False
+
+        self.is_facing_right: bool = True
+        self.attack_animation: int = 0
+        self.level = level
+        self.attack_triggered: bool = False
+        self.name: str = "Creature"
+        self.health: int = 3
+
         # Use the class's animation constants
         self.animation_state = self.get_animation_states().IDLE_RIGHT
 
@@ -50,6 +55,37 @@ class Creature(AnimatedSprite):
             self.texture_sets.append(
                 load_100x100_textures(sprite_sheet, row=i, count=count, from_right=True)
             )
+
+    def attack_1(self):
+        if self.attack_animation > 0:
+            return
+        self.attack_animation = 1
+        self.texture_clock = 0
+        self.attack_triggered = False
+        anim = self.get_animation_states()
+        if self.is_facing_right:
+            self.animation_state = anim.ATTACK_1_RIGHT
+        else:
+            self.animation_state = anim.ATTACK_1_LEFT
+
+    def attack_2(self):
+        if self.attack_animation > 0:
+            return
+        self.attack_animation = 2
+        self.texture_clock = 0
+        self.attack_triggered = False
+        anim = self.get_animation_states()
+        if self.is_facing_right:
+            self.animation_state = anim.ATTACK_2_RIGHT
+        else:
+            self.animation_state = anim.ATTACK_2_LEFT
+
+    def get_attack_hit_box(self):
+        if self.is_facing_right:
+            hitbox_points = (0, 25), (0, -25), (40, -30), (40, 30)
+        else:
+            hitbox_points = (0, 25), (0, -25), (-40, -30), (-40, 30)
+        return arcade.hitbox.HitBox(points=hitbox_points, position=self.position)
 
     def get_attack_damage(self):
         return 1

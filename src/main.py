@@ -46,7 +46,7 @@ class MyGame(arcade.Window):
         self.camera_gui = arcade.Camera2D()
 
         # Level info
-        self.level: Level = Level()
+        self.level: Level = Level(player_list=self.player_list)
         self.cur_level = 0
         self.levels: list[Level] = []
 
@@ -87,13 +87,15 @@ class MyGame(arcade.Window):
 
         # Load the dungeon map
         for level_file_name in LEVEL_FILE_NAMES:
-            level = Level()
+            level = Level(player_list=self.player_list)
             level.load(level_file_name)
-            level.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, [level.wall_list, level.monster_list])
+            level.physics_engine = arcade.PhysicsEngineSimple(
+                self.player_sprite, [level.wall_list, level.monster_list]
+            )
             self.levels.append(level)
 
         self.level = self.levels[self.cur_level]
-        
+
         # Set the player's level reference
         self.player_sprite.level = self.level
 
@@ -104,6 +106,7 @@ class MyGame(arcade.Window):
         arcade.set_background_color(arcade.color.BLACK)
 
     def get_grid_position(self, x: float, y: float) -> tuple[int, int]:
+        """Convert pixel coordinates to grid coordinates."""
         grid_column = int(x // GRID_SIZE)
         grid_row = int(self.level.dungeon_map.map_height - y // GRID_SIZE)
         return grid_column, grid_row
@@ -127,7 +130,9 @@ class MyGame(arcade.Window):
         self.camera_gui.use()
 
         # Player position in grid coordinates
-        grid_column, grid_row = self.get_grid_position(self.player_sprite.center_x, self.player_sprite.center_y)
+        grid_column, grid_row = self.get_grid_position(
+            self.player_sprite.center_x, self.player_sprite.center_y
+        )
 
         try:
             # Get the tile at the player's position
@@ -139,7 +144,9 @@ class MyGame(arcade.Window):
         arcade.draw_rect_filled(
             arcade.rect.XYWH(self.width // 2, 40, self.width, 80), arcade.color.ALMOND
         )
-        info = f"Level {self.cur_level + 1}, Player Position: {grid_column}, {grid_row}. "
+        info = (
+            f"Level {self.cur_level + 1}, Player Position: {grid_column}, {grid_row}. "
+        )
         if cur_tile and cur_tile.room_id:
             info += f"Room {cur_tile.room_id}. "
             room = self.level.dungeon_map.get_room(str(cur_tile.room_id))
@@ -164,7 +171,9 @@ class MyGame(arcade.Window):
         elif symbol == arcade.key.D:
             self.right_pressed = True
         elif symbol == arcade.key.E:
-            grid_column, grid_row = self.get_grid_position(self.player_sprite.center_x, self.player_sprite.center_y)
+            grid_column, grid_row = self.get_grid_position(
+                self.player_sprite.center_x, self.player_sprite.center_y
+            )
             cur_tile = self.level.dungeon_map.tiles[grid_row][grid_column]
             if cur_tile.stair_down:
                 print("DOWN STAIRS")
@@ -281,8 +290,6 @@ class MyGame(arcade.Window):
             camera_speed,
         )
 
-
-
     def on_resize(self, width: int, height: int):
         """
         Resize window
@@ -301,7 +308,6 @@ class MyGame(arcade.Window):
         """Set the clipboard text."""
         # You can implement clipboard functionality or just pass for now
         # pass
-
 
 
 def main():
