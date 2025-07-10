@@ -33,6 +33,9 @@ class PlayerSprite(Creature):
         # Idle, Walk, attack 1, attack 2, attack 3, hurt
         sprite_count = [6, 8, 6, 6, 9, 4, 4]
         self._load_textures(sprite_sheet, sprite_count)
+        self.max_health: int = 10
+        self.cur_health: int = self.max_health
+
 
     def get_animation_states(self):
         """Return the animation states class for the Player"""

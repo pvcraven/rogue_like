@@ -11,7 +11,7 @@ class AnimationStates:
     ATTACK_1_RIGHT = 2
     ATTACK_2_RIGHT = 3
 
-    IDLE_LEFT = None  # Will be set by subclasses
+    IDLE_LEFT = None
     WALK_LEFT = None
     ATTACK_1_LEFT = None
     ATTACK_2_LEFT = None
@@ -27,7 +27,8 @@ class Creature(AnimatedSprite):
         self.level = level
         self.attack_triggered: bool = False
         self.name: str = "Creature"
-        self.health: int = 3
+        self.max_health: int = 3
+        self.cur_health: int = self.max_health
 
         # Use the class's animation constants
         self.animation_state = self.get_animation_states().IDLE_RIGHT
@@ -95,11 +96,13 @@ class Creature(AnimatedSprite):
         # Implement damage handling logic here
         print(f"{self.name} took {damage} damage.")
         # For example, you could reduce health or trigger a death animation
-        self.health -= damage
+        self.cur_health -= damage
+        if self.cur_health <= 0:
+            self.cur_health = 0
 
         anim = self.get_animation_states()
         self.texture_clock = 0
-        if self.health > 0:
+        if self.cur_health > 0:
             if self.is_facing_right:
                 self.animation_state = anim.HURT_RIGHT
             else:

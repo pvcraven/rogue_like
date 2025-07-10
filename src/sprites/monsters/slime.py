@@ -1,4 +1,5 @@
 import arcade
+import math
 from arcade import SpriteSheet
 
 from sprites.creature import Creature, AnimationStates
@@ -39,6 +40,7 @@ class Slime(Creature):
         self.health = 2
         self.texture_clock = 0
         self.animation_state = self.get_animation_states().WALK_LEFT
+        self.speed = 0.2
 
         sprite_sheet = SpriteSheet("sprites/Slime.png")
 
@@ -46,6 +48,7 @@ class Slime(Creature):
         # Idle, Walk, attack 1, attack 2, hurt, death
         sprite_count = [6, 6, 6, 6, 4, 4]
         self._load_textures(sprite_sheet, sprite_count)
+        self.physics_engine = arcade.PhysicsEngineSimple(self, self.level.wall_list)
 
     def get_animation_states(self):
         """Return the animation states class for the Slime"""
@@ -125,6 +128,14 @@ class Slime(Creature):
                     self.is_facing_right = False
                 else:
                     self.is_facing_right = True
+
+                # Calculate angle to player
+                angle = arcade.math.get_angle_radians(
+                    self.center_x, self.center_y, player.center_x, player.center_y
+                )
+                self.change_x = self.speed * math.sin(angle)
+                self.change_y = self.speed * math.cos(angle)
+                self.physics_engine.update()
 
                 distance = arcade.get_distance_between_sprites(self, player)
                 if (

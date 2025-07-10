@@ -141,8 +141,38 @@ class MyGame(arcade.Window):
             cur_tile = None
 
         # Draw the GUI
+        ui_height = 200
+        # UI Panel Background
         arcade.draw_rect_filled(
-            arcade.rect.XYWH(self.width // 2, 40, self.width, 80), arcade.color.ALMOND
+            arcade.rect.XYWH(self.width // 2, ui_height / 2, self.width, ui_height),
+            arcade.color.ALMOND,
+        )
+        # Health Bar
+        health_bar_width = 40
+        health_bar_max_height = ui_height / 2
+        health_percent = self.player_sprite.cur_health / self.player_sprite.max_health
+        health_bar_height = health_bar_max_height * health_percent
+
+        color = arcade.color.GREEN if health_percent > 0.5 else arcade.color.YELLOW if health_percent > 0.2 else arcade.color.RED
+        arcade.draw_rect_filled(
+            arcade.rect.LBWH(
+                5,
+                100 - 5,
+                40,
+                health_bar_height,
+            ),
+            color=color
+        )
+
+        arcade.draw_rect_outline(
+            arcade.rect.XYWH(
+                health_bar_width / 2 + 5,
+                ui_height * 3 / 4 - 5,
+                health_bar_width,
+                health_bar_max_height,
+            ),
+            color=arcade.color.BLACK,
+            border_width=2,
         )
         info = (
             f"Level {self.cur_level + 1}, Player Position: {grid_column}, {grid_row}. "
