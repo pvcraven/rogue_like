@@ -113,9 +113,34 @@ class Slime(Creature):
                 self.animation_state = anim.IDLE_LEFT
 
         for player in self.level.player_list:
-            distance = arcade.get_distance_between_sprites(self, player)
-            if distance < 100 and not self.attack_animation:
-                self.animation_state = (
-                    anim.ATTACK_1_RIGHT if self.is_facing_right else anim.ATTACK_1_LEFT
-                )
-                self.attack_1()
+            has_line_of_sight = arcade.has_line_of_sight(
+                observer=self.position,
+                target=player.position,
+                walls=self.level.wall_list,
+                max_distance=200,
+                check_resolution=8,
+            )
+            if has_line_of_sight:
+                if player.center_x < self.center_x:
+                    self.is_facing_right = False
+                else:
+                    self.is_facing_right = True
+
+                distance = arcade.get_distance_between_sprites(self, player)
+                if (
+                    distance < 100
+                    and not self.attack_animation
+                    and self.animation_state
+                    not in (
+                        anim.DEATH_LEFT,
+                        anim.DEATH_RIGHT,
+                        anim.HURT_LEFT,
+                        anim.HURT_RIGHT,
+                    )
+                ):
+                    self.animation_state = (
+                        anim.ATTACK_1_RIGHT
+                        if self.is_facing_right
+                        else anim.ATTACK_1_LEFT
+                    )
+                    self.attack_1()
