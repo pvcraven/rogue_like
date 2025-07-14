@@ -33,6 +33,7 @@ class Level:
         self.wall_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
         self.background_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
         self.door_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
+        self.stair_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=False)
         self.monster_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=False)
         self.player_list = player_list
 
@@ -141,7 +142,7 @@ class Level:
                     sprite.bottom = y
                     sprite.block_sight = False
                     sprite.tile = tile
-                    self.door_list.append(sprite)
+                    self.stair_list.append(sprite)
 
                 if tile.stair_down:
                     texture = self.sprite_sheet_stairs.get_texture(arcade.LBWH(1*32, 0*32, 32, 32))
@@ -151,7 +152,7 @@ class Level:
                     sprite.bottom = y
                     sprite.block_sight = False
                     sprite.tile = tile
-                    self.door_list.append(sprite)
+                    self.stair_list.append(sprite)
 
                 if sprite:
                     sprite.color = sprite.not_visible_color
@@ -198,13 +199,13 @@ class Level:
         """
         Get a list of stair up sprites
         """
-        return [sprite for sprite in self.door_list if sprite.tile.stair_up]
+        return [sprite for sprite in self.stair_list if sprite.tile.stair_up]
 
     def get_stairs_down(self):
         """
         Get a list of stair down sprites
         """
-        return [sprite for sprite in self.door_list if sprite.tile.stair_down]
+        return [sprite for sprite in self.stair_list if sprite.tile.stair_down]
 
     def attack(self, source_sprite: AnimatedSprite, target_list: arcade.SpriteList):
         """

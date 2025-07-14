@@ -12,6 +12,7 @@ from level import Level
 from recalculate_fov import recalculate_fov
 from sprites.player import PlayerSprite
 from util import pixel_to_grid
+from arcade.experimental import Shadertoy
 
 SCREEN_TITLE = "Rogue-Like Example"
 
@@ -24,6 +25,12 @@ class MyGame(arcade.Window):
 
     def __init__(self, width, height, title):
         super().__init__(width, height, title, resizable=True)
+
+        # The shader toy and 'channels' we'll be using
+        self.shadertoy = None
+        self.channel0 = None
+        self.channel1 = None
+        self.load_shader()
 
         # Sprite lists
         self.player_list = None
@@ -59,6 +66,26 @@ class MyGame(arcade.Window):
             width=self.width,
             multiline=True,
         )
+
+    def load_shader(self):
+        # Size of the window
+        window_size = self.get_size()
+
+        # Create the shader toy, passing in a path for the shader source
+        self.shadertoy = Shadertoy.create_from_file(window_size, "src/shadows.glsl")
+
+        # Create the channels 0 and 1 frame buffers.
+        # Make the buffer the size of the window, with 4 channels (RGBA)
+        self.channel0 = self.shadertoy.ctx.framebuffer(
+            color_attachments=[self.shadertoy.ctx.texture(window_size, components=4)]
+        )
+        self.channel1 = self.shadertoy.ctx.framebuffer(
+            color_attachments=[self.shadertoy.ctx.texture(window_size, components=4)]
+        )
+
+        # Assign the frame buffers to the channels
+        self.shadertoy.channel_0 = self.channel0.color_attachments[0]
+        self.shadertoy.channel_1 = self.channel1.color_attachments[0]
 
     def set_player_position_to_stairs(self, stairs_up: bool) -> None:
         """Set the player position to the first set of stairs up."""
@@ -114,15 +141,45 @@ class MyGame(arcade.Window):
     def on_draw(self):
         """Render the screen."""
 
-        self.clear()
-
+        self.channel0.use()
+        self.channel0.clear()
         self.camera_sprites.use()
-
-        # Draw all the sprites.
-        self.level.background_list.draw(pixelated=True)
+        # Draw the walls
         self.level.wall_list.draw(pixelated=True)
         self.level.door_list.draw(pixelated=True)
+
+        self.channel1.use()
+        self.channel1.clear(color=arcade.color.WHITE)
+        self.camera_sprites.use()
+        # self.level.background_list.draw(pixelated=True)
         self.level.monster_list.draw(pixelated=True)
+        # self.level.door_list.draw(pixelated=True)
+
+        self.use()
+        self.clear()
+        self.camera_sprites.use()
+
+        # Calculate the light position. We have to subtract the camera position
+        # from the player position to get screen-relative coordinates.
+        left, bottom = self.camera_sprites.bottom_left
+        # left, bottom = 0, 0
+        p = (self.player_sprite.position[0] - left,
+             self.player_sprite.position[1] - bottom)
+
+        # Set the uniform data
+        self.shadertoy.program['lightPosition'] = p
+        self.shadertoy.program['lightSize'] = 600
+
+        # Run the shader and render to the window
+        self.shadertoy.render()
+
+        # Draw all the sprites.
+        # self.level.background_list.draw(pixelated=True)
+        self.level.wall_list.draw(pixelated=True)
+        self.level.door_list.draw(pixelated=True)
+        self.level.stair_list.draw(pixelated=True)
+
+        # self.level.monster_list.draw(pixelated=True)
         self.player_list.draw(pixelated=True)
         self.player_list.draw_hit_boxes()
 
@@ -274,7 +331,6 @@ class MyGame(arcade.Window):
                 self.level.wall_list,
                 self.level.door_list,
                 self.level.background_list,
-                self.level.monster_list,
             ]
             recalculate_fov(
                 char_x=pos_grid[0],

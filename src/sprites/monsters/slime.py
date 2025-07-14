@@ -35,8 +35,8 @@ class Slime(Creature):
         self.is_facing_right = True
         self.attack_animation = 0
         self.visible_color = 255, 255, 255, 255
-        self.not_visible_color = 255, 255, 255, 0
-        self.seen_color = 255, 255, 255, 0
+        self.not_visible_color = 255, 255, 255, 255
+        self.seen_color = 255, 255, 255, 255
         self.health = 2
         self.texture_clock = 0
         self.animation_state = self.get_animation_states().WALK_LEFT
@@ -135,7 +135,11 @@ class Slime(Creature):
                 )
                 self.change_x = self.speed * math.sin(angle)
                 self.change_y = self.speed * math.cos(angle)
-                self.physics_engine.update()
+                # self.position = (
+                #     self.position[0] + self.change_x,
+                #     self.position[1] + self.change_y,
+                # )
+                # self.physics_engine.update()
 
                 distance = arcade.get_distance_between_sprites(self, player)
                 if (
