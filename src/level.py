@@ -24,6 +24,7 @@ class Level:
     """
     Represents a dungeon level with walls, doors, and monsters.
     """
+
     def __init__(self, player_list: arcade.SpriteList):
 
         # Create the dungeon map
@@ -31,7 +32,9 @@ class Level:
 
         # Sprite lists for different types of sprites
         self.wall_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
-        self.background_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
+        self.background_list: arcade.SpriteList = arcade.SpriteList(
+            use_spatial_hash=True
+        )
         self.door_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
         self.stair_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=False)
         self.monster_list: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=False)
@@ -42,7 +45,9 @@ class Level:
         self.sprite_sheet_doors = arcade.SpriteSheet("sprites/doors.png")
         self.sprite_sheet_stairs = arcade.SpriteSheet("sprites/stairs.png")
 
-        self.physics_engine: arcade.PhysicsEngineSimple = arcade.PhysicsEngineSimple(None, self.wall_list)
+        self.physics_engine: arcade.PhysicsEngineSimple = arcade.PhysicsEngineSimple(
+            None, self.wall_list
+        )
 
     def _get_surrounding_tiles(self, row, column):
         """
@@ -50,20 +55,45 @@ class Level:
         """
         tiles = [
             [
-                self.dungeon_map.tiles[row - 1][column - 1] if row > 0 and column > 0 else None,
+                (
+                    self.dungeon_map.tiles[row - 1][column - 1]
+                    if row > 0 and column > 0
+                    else None
+                ),
                 self.dungeon_map.tiles[row - 1][column] if row > 0 else None,
-                self.dungeon_map.tiles[row - 1][column + 1] if row > 0 and column < self.dungeon_map.map_width - 1 else None
+                (
+                    self.dungeon_map.tiles[row - 1][column + 1]
+                    if row > 0 and column < self.dungeon_map.map_width - 1
+                    else None
+                ),
             ],
             [
                 self.dungeon_map.tiles[row][column - 1] if column > 0 else None,
                 self.dungeon_map.tiles[row][column],
-                self.dungeon_map.tiles[row][column + 1] if column < self.dungeon_map.map_width - 1 else None
+                (
+                    self.dungeon_map.tiles[row][column + 1]
+                    if column < self.dungeon_map.map_width - 1
+                    else None
+                ),
             ],
             [
-                self.dungeon_map.tiles[row + 1][column - 1] if row < self.dungeon_map.map_height - 1 and column > 0 else None,
-                self.dungeon_map.tiles[row + 1][column] if row < self.dungeon_map.map_height - 1 else None,
-                self.dungeon_map.tiles[row + 1][column + 1] if row < self.dungeon_map.map_height - 1 and column < self.dungeon_map.map_width - 1 else None
-            ]
+                (
+                    self.dungeon_map.tiles[row + 1][column - 1]
+                    if row < self.dungeon_map.map_height - 1 and column > 0
+                    else None
+                ),
+                (
+                    self.dungeon_map.tiles[row + 1][column]
+                    if row < self.dungeon_map.map_height - 1
+                    else None
+                ),
+                (
+                    self.dungeon_map.tiles[row + 1][column + 1]
+                    if row < self.dungeon_map.map_height - 1
+                    and column < self.dungeon_map.map_width - 1
+                    else None
+                ),
+            ],
         ]
         return tiles
 
@@ -72,13 +102,25 @@ class Level:
         Get a 3x3 array of 1s and 0s representing walls around the tile at (row, column).
         """
         return [
-            [1 if _is_wall(tiles[0][0]) else 0, 1 if _is_wall(tiles[0][1]) else 0, 1 if _is_wall(tiles[0][2]) else 0],
-            [1 if _is_wall(tiles[1][0]) else 0, 1 if _is_wall(tiles[1][1]) else 0, 1 if _is_wall(tiles[1][2]) else 0],
-            [1 if _is_wall(tiles[2][0]) else 0, 1 if _is_wall(tiles[2][1]) else 0, 1 if _is_wall(tiles[2][2]) else 0]
+            [
+                1 if _is_wall(tiles[0][0]) else 0,
+                1 if _is_wall(tiles[0][1]) else 0,
+                1 if _is_wall(tiles[0][2]) else 0,
+            ],
+            [
+                1 if _is_wall(tiles[1][0]) else 0,
+                1 if _is_wall(tiles[1][1]) else 0,
+                1 if _is_wall(tiles[1][2]) else 0,
+            ],
+            [
+                1 if _is_wall(tiles[2][0]) else 0,
+                1 if _is_wall(tiles[2][1]) else 0,
+                1 if _is_wall(tiles[2][2]) else 0,
+            ],
         ]
 
     def load(self, filename):
-        """ Load the level from a JSON file and create sprites for walls, doors, and monsters. """
+        """Load the level from a JSON file and create sprites for walls, doors, and monsters."""
         # Load the map
         self.dungeon_map.load(filename)
 
@@ -124,9 +166,13 @@ class Level:
                 if tile.door or tile.locked or tile.trapped or tile.secret:
                     left_tile = tile = self.dungeon_map.tiles[row][column - 1]
                     if left_tile.cell == 0 or left_tile.perimeter:
-                        texture = self.sprite_sheet_doors.get_texture(arcade.LBWH(4*32, 0*32, 32, 32))
+                        texture = self.sprite_sheet_doors.get_texture(
+                            arcade.LBWH(4 * 32, 0 * 32, 32, 32)
+                        )
                     else:
-                        texture = self.sprite_sheet_doors.get_texture(arcade.LBWH(3*32, 0*32, 32, 32))
+                        texture = self.sprite_sheet_doors.get_texture(
+                            arcade.LBWH(3 * 32, 0 * 32, 32, 32)
+                        )
                     sprite = Entity(texture, scale=SPRITE_SCALE)
 
                     sprite.center_x = x + GRID_SIZE / 2
@@ -135,7 +181,9 @@ class Level:
                     self.door_list.append(sprite)
 
                 if tile.stair_up:
-                    texture = self.sprite_sheet_stairs.get_texture(arcade.LBWH(0*32, 0*32, 32, 32))
+                    texture = self.sprite_sheet_stairs.get_texture(
+                        arcade.LBWH(0 * 32, 0 * 32, 32, 32)
+                    )
                     sprite = Entity(texture, scale=SPRITE_SCALE)
 
                     sprite.left = x
@@ -145,7 +193,9 @@ class Level:
                     self.stair_list.append(sprite)
 
                 if tile.stair_down:
-                    texture = self.sprite_sheet_stairs.get_texture(arcade.LBWH(1*32, 0*32, 32, 32))
+                    texture = self.sprite_sheet_stairs.get_texture(
+                        arcade.LBWH(1 * 32, 0 * 32, 32, 32)
+                    )
                     sprite = Entity(texture, scale=SPRITE_SCALE)
 
                     sprite.left = x
@@ -178,21 +228,26 @@ class Level:
                     sprite.bottom = y
                     self.background_list.append(sprite)
 
-        for room in self.dungeon_map.json['rooms']:
+        for room in self.dungeon_map.json["rooms"]:
             if room:
-                north = room['north']
-                south = room['south']
-                east = room['east']
-                west = room['west']
-                id = room['id']
+                north = room["north"]
+                south = room["south"]
+                east = room["east"]
+                west = room["west"]
+                id = room["id"]
                 # print(f"Room {id}: North {north}, South {south}, East {east}, West {west}")
                 if int(id) == 6:
                     rand_row = random.randint(north, south)
                     rand_col = random.randint(west, east)
-                    x, y = grid_to_pixel(rand_col, rand_row, self.dungeon_map.map_height)
+                    x, y = grid_to_pixel(
+                        rand_col, rand_row, self.dungeon_map.map_height
+                    )
                     print(f"Random tile in room {id}: row={rand_row}, col={rand_col}")
                     monster = Slime(level=self)
                     monster.position = (x, y)
+                    monster.color = sprite.visible_color
+                    if len(monster.visible_color) == 4:
+                        monster.alpha = monster.visible_color[3]
                     self.monster_list.append(monster)
 
     def get_stairs_up(self):
@@ -217,7 +272,9 @@ class Level:
         """
         original_hit_box = source_sprite.hit_box
         source_sprite.hit_box = source_sprite.get_attack_hit_box()
-        collision_list = arcade.check_for_collision_with_list(source_sprite, target_list)
+        collision_list = arcade.check_for_collision_with_list(
+            source_sprite, target_list
+        )
         print("Hit:", len(collision_list))
         for sprite in collision_list:
             sprite.take_damage(source_sprite.get_attack_damage())

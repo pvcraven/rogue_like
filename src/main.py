@@ -151,9 +151,8 @@ class MyGame(arcade.Window):
         self.channel1.use()
         self.channel1.clear(color=arcade.color.WHITE)
         self.camera_sprites.use()
-        # self.level.background_list.draw(pixelated=True)
+        self.level.background_list.draw(pixelated=True)
         self.level.monster_list.draw(pixelated=True)
-        # self.level.door_list.draw(pixelated=True)
 
         self.use()
         self.clear()
@@ -163,12 +162,14 @@ class MyGame(arcade.Window):
         # from the player position to get screen-relative coordinates.
         left, bottom = self.camera_sprites.bottom_left
         # left, bottom = 0, 0
-        p = (self.player_sprite.position[0] - left,
-             self.player_sprite.position[1] - bottom)
+        p = (
+            self.player_sprite.position[0] - left,
+            self.player_sprite.position[1] - bottom,
+        )
 
         # Set the uniform data
-        self.shadertoy.program['lightPosition'] = p
-        self.shadertoy.program['lightSize'] = 600
+        self.shadertoy.program["lightPosition"] = p
+        self.shadertoy.program["lightSize"] = 600
 
         # Run the shader and render to the window
         self.shadertoy.render()
@@ -179,7 +180,6 @@ class MyGame(arcade.Window):
         self.level.door_list.draw(pixelated=True)
         self.level.stair_list.draw(pixelated=True)
 
-        # self.level.monster_list.draw(pixelated=True)
         self.player_list.draw(pixelated=True)
         self.player_list.draw_hit_boxes()
 
@@ -210,7 +210,11 @@ class MyGame(arcade.Window):
         health_percent = self.player_sprite.cur_health / self.player_sprite.max_health
         health_bar_height = health_bar_max_height * health_percent
 
-        color = arcade.color.GREEN if health_percent > 0.5 else arcade.color.YELLOW if health_percent > 0.2 else arcade.color.RED
+        color = (
+            arcade.color.GREEN
+            if health_percent > 0.5
+            else arcade.color.YELLOW if health_percent > 0.2 else arcade.color.RED
+        )
         arcade.draw_rect_filled(
             arcade.rect.LBWH(
                 5,
@@ -218,7 +222,7 @@ class MyGame(arcade.Window):
                 40,
                 health_bar_height,
             ),
-            color=color
+            color=color,
         )
 
         arcade.draw_rect_outline(
