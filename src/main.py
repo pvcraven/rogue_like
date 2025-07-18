@@ -169,7 +169,8 @@ class MyGame(arcade.Window):
 
         # Set the uniform data
         self.shadertoy.program["lightPosition"] = p
-        self.shadertoy.program["lightSize"] = 600
+        self.shadertoy.program["lightSize"] = 600 * self.camera_sprites.zoom
+        self.shadertoy.program["zoom"] = 1.25 * self.camera_sprites.zoom
 
         # Run the shader and render to the window
         self.shadertoy.render()
@@ -181,7 +182,7 @@ class MyGame(arcade.Window):
         self.level.stair_list.draw(pixelated=True)
 
         self.player_list.draw(pixelated=True)
-        self.player_list.draw_hit_boxes()
+        # self.player_list.draw_hit_boxes()
 
         # Select the (unscrolled) camera for our GUI
         self.camera_gui.use()

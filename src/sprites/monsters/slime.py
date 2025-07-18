@@ -135,11 +135,7 @@ class Slime(Creature):
                 )
                 self.change_x = self.speed * math.sin(angle)
                 self.change_y = self.speed * math.cos(angle)
-                # self.position = (
-                #     self.position[0] + self.change_x,
-                #     self.position[1] + self.change_y,
-                # )
-                # self.physics_engine.update()
+                self.physics_engine.update()
 
                 distance = arcade.get_distance_between_sprites(self, player)
                 if (

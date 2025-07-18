@@ -4,6 +4,8 @@
 uniform vec2 lightPosition;
 // Size of light in pixels
 uniform float lightSize;
+// Zoom
+uniform float zoom;
 
 float terrain(vec2 samplePoint)
 {
@@ -22,8 +24,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
     // Normalize the fragment coordinate from (0.0, 0.0) to (1.0, 1.0)
     vec2 fragCoord2 = fragCoord + 0; 
-    vec2 lightPosition2 = lightPosition * 1.25;
-    vec2 iResolution2 = iResolution.xy * 1.25;
+    vec2 lightPosition2 = lightPosition * zoom;
+    vec2 iResolution2 = iResolution.xy * zoom;
     vec2 normalizedFragCoord = fragCoord2/iResolution2.xy;
     vec2 normalizedLightCoord = lightPosition2.xy/iResolution2.xy;
 
