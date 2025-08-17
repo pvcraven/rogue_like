@@ -140,49 +140,42 @@ class MyGame(arcade.Window):
 
     def on_draw(self):
         """Render the screen."""
-
-        self.channel0.use()
-        self.channel0.clear()
-        self.camera_sprites.use()
-        # Draw the walls
-        self.level.wall_list.draw(pixelated=True)
-        self.level.door_list.draw(pixelated=True)
-
-        self.channel1.use()
-        self.channel1.clear(color=arcade.color.WHITE)
-        self.camera_sprites.use()
-        self.level.background_list.draw(pixelated=True)
-        self.level.monster_list.draw(pixelated=True)
-
-        self.use()
         self.clear()
-        self.camera_sprites.use()
+        with self.camera_sprites.activate():
+            with self.channel0.activate():
+                self.channel0.clear()
+                # Draw the walls
+                self.level.wall_list.draw(pixelated=True)
+                self.level.door_list.draw(pixelated=True)
 
-        # Calculate the light position. We have to subtract the camera position
-        # from the player position to get screen-relative coordinates.
-        left, bottom = self.camera_sprites.bottom_left
-        # left, bottom = 0, 0
-        p = (
-            self.player_sprite.position[0] - left,
-            self.player_sprite.position[1] - bottom,
-        )
+            with self.channel1.activate():
+                self.channel1.clear(color=arcade.color.WHITE)
+                self.level.background_list.draw(pixelated=True)
+                self.level.monster_list.draw(pixelated=True)
 
-        # Set the uniform data
-        self.shadertoy.program["lightPosition"] = p
-        self.shadertoy.program["lightSize"] = 600 * self.camera_sprites.zoom
-        self.shadertoy.program["zoom"] = 1.25 * self.camera_sprites.zoom
+            # Calculate the light position. Because the shader works off of what is
+            # rendered to the screen this is the same as finding where the player is
+            # on screen. Camera2D provides a method to do this.
+            p = self.camera_sprites.project(self.player_sprite.position)
 
-        # Run the shader and render to the window
-        self.shadertoy.render()
+            # Set the uniform data
+            self.shadertoy.program["lightPosition"] = p
+            self.shadertoy.program["lightSize"] = 600 * self.camera_sprites.zoom
+            # Because the camera zooms the sprites automatically they don't need to be
+            # scaled in the shader.
+            self.shadertoy.program["zoom"] = 1
 
-        # Draw all the sprites.
-        # self.level.background_list.draw(pixelated=True)
-        self.level.wall_list.draw(pixelated=True)
-        self.level.door_list.draw(pixelated=True)
-        self.level.stair_list.draw(pixelated=True)
+            # Run the shader and render to the window
+            self.shadertoy.render()
 
-        self.player_list.draw(pixelated=True)
-        # self.player_list.draw_hit_boxes()
+            # Draw all the sprites.
+            # self.level.background_list.draw(pixelated=True)
+            self.level.wall_list.draw(pixelated=True)
+            self.level.door_list.draw(pixelated=True)
+            self.level.stair_list.draw(pixelated=True)
+
+            self.player_list.draw(pixelated=True)
+            # self.player_list.draw_hit_boxes()
 
         # Select the (unscrolled) camera for our GUI
         self.camera_gui.use()
